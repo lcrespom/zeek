@@ -38,13 +38,18 @@ function dir_history_popup() {
 # Open Zeek command history popup
 function history_popup() {
     local history_command=$(zeek history "$LBUFFER" "$RBUFFER")
-    [[ -n "$history_command" ]] && LBUFFER="$history_command" && RBUFFER=""
+    if [[ -n "$history_command" ]]; then
+        LBUFFER="$history_command"
+        RBUFFER=""
+    fi
 }
 
-# Open Zeek popup in the file search page
+# Open Zeek popup in the file search page (not implemented yet)
 function file_search_popup() {
     local search_out=$(zeek file-search "$LBUFFER" "$PWD")
-    [[ -n "$search_out" ]] && LBUFFER=$search_out
+    if [[ -n "$search_out" ]]; then
+      LBUFFER=$search_out
+    fi
 }
 
 # Just move one directory up
