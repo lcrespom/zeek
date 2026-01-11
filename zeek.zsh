@@ -16,6 +16,9 @@ ZEEK_MAX_CMD_HISTORY_LINES=2000
 # visited).
 ZEEK_MAX_DIR_HISTORY_LINES=200
 
+# Derive syntax highlighting styles as JSON from zsh-syntax-highlighting settings, if they exist
+[[ -n $ZSH_HIGHLIGHT_STYLES ]] && ZEEK_HIGHLIGHT_STYLES="{$(for key value in "${(@kv)ZSH_HIGHLIGHT_STYLES}"; do printf '"%s": "%s", ' "$key" "$value"; done | sed 's/, $//')}"
+
 export ZEEK_DIR="${0:A:h}"
 alias zeek='node $ZEEK_DIR/src/index.ts </dev/tty 3>&1 1>&2'
 # ------------------------- Configuration end -------------------------
