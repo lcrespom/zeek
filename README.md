@@ -7,7 +7,7 @@ visual interface) to the command line.
 
 ## Core Functionality
 
-The project provides three main features:
+Zeek provides three main features:
 
 ### 1. **Command History Popup** (Page Up)
 
@@ -48,6 +48,16 @@ source [zeek-install-path]/zeek.zsh
 ```
 
 At the end of your `~/.zshrc` file.
+
+### Key Bindings
+
+- **Page Up**: Command history popup
+- **Page Down**: Directory history popup
+- **Shift+Up**: Go to parent directory (`cd ..`)
+- **Shift+Right**: File search (not implemented yet)
+- **ESC**: Clear current line
+- **Home/End**: Navigate to start/end of line
+- **Option+Left/Right**: Word navigation
 
 ## How It Works
 
@@ -93,13 +103,3 @@ The architecture is a combination of **Zsh shell scripting** and **Node.js/TypeS
 4. **Configuration**:
    - Reads settings from the Zsh script itself
    - Configurable menu size, position, and history limits
-
-## Key Bindings
-
-- **Page Up**: Command history popup
-- **Page Down**: Directory history popup
-- **Shift+Up**: Go to parent directory (`cd ..`)
-- **Shift+Right**: File search (not implemented yet)
-- **ESC**: Clear current line
-- **Home/End**: Navigate to start/end of line
-- **Option+Left/Right**: Word navigation
