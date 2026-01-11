@@ -19,16 +19,19 @@ import {
 import { Config } from './config.ts'
 import { GRAPHIC_NEWLINE } from './cmd-history.ts'
 
-// TODO read from configuration file
+// TODO read colors from configuration file
 const MENU_BG_COLOR = '#1d1e1a'
 const MENU_BG_SEL_COLOR = '#4a483a'
+const MENU_FG_COLOR = '#58d1eb'
+const SCROLL_FG_COLOR = '#ffffff'
+
 const NO_MATCHES = '# 🤷 No matches'
 
 export class HistoryPopup {
   private items: string[] = []
   private filteredItems: string[] = []
   private menu: TableMenuInstance = {} as TableMenuInstance
-  private lineHighlighter: (line: string) => string = fgColorFunc('#58d1eb')
+  private lineHighlighter: (line: string) => string = fgColorFunc(MENU_FG_COLOR)
   private menuRow: number = 3
   private lineEditorRow: number = 1
 
@@ -96,7 +99,7 @@ export class HistoryPopup {
       item: (i: string) => itemBGfunc(this.lineHighlighter(i.padEnd(width))),
       selectedItem: (i: string) => selBGfunc(this.lineHighlighter(i.padEnd(width))),
       scrollArea: itemBGfunc,
-      scrollBar: fgColorFunc('#ffffff')
+      scrollBar: fgColorFunc(SCROLL_FG_COLOR)
     }
   }
 
