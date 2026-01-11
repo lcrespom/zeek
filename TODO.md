@@ -10,7 +10,7 @@
   - [ ] Replicate nash look&feel
   - [ ] Directory navigation
 - Misc
-  - [ ] Documentation
+  - [x] Documentation
 - Bugs
   - [ ] Fix menu bug: duplicate last line when ZEEK_MENU_ROW=1
     - Currently fixed with workaround: if ZEEK_MENU_ROW=1, then set it to 2
@@ -22,16 +22,14 @@
 - History
   - [x] Gather selection
   - [x] Remove duplicates
-  - [x] Create shell script to register keyboard shortcuts and buffer
-        replacement
+  - [x] Create shell script to register keyboard shortcuts and buffer replacement
   - [x] Place menu at bottom (negative row config)
   - [x] Support multi-line commands
   - [x] Underline builtins
   - [ ] Use which when possible (check performance)
   - Filter history
     - [x] Interactive line editor to filter
-    - [x] Full keyboard support in interactive line editor (left, right, home,
-          end, delete...)
+    - [x] Full keyboard support in interactive line editor (left, right, home, end, delete...)
     - [x] Gather initial buffer and use for initial filter
     - [x] Fuzzy filter, shelp style
     - [x] Support placing line editor at the bottom of the menu
