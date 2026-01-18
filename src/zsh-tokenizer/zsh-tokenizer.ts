@@ -84,160 +84,27 @@ export type ZshToken = {
 }
 
 // Zsh reserved words
-const RESERVED_WORDS = new Set([
-  'if',
-  'then',
-  'else',
-  'elif',
-  'fi',
-  'case',
-  'esac',
-  'for',
-  'select',
-  'while',
-  'until',
-  'do',
-  'done',
-  'in',
-  'function',
-  'time',
-  'coproc',
-  '[[',
-  ']]',
-  '{',
-  '}',
-  '!',
-  'foreach',
-  'end',
-  'repeat',
-  'nocorrect',
-  'always'
-])
+const RESERVED_WORDS = new Set(
+  `if then else elif fi case esac for select while until do done in
+  function time coproc [[ ]] { } ! foreach end repeat nocorrect always`.split(/\s+/)
+)
 
 // Zsh builtin commands
-const BUILTINS = new Set([
-  '.',
-  ':',
-  'alias',
-  'autoload',
-  'bg',
-  'bindkey',
-  'break',
-  'builtin',
-  'bye',
-  'cap',
-  'cd',
-  'chdir',
-  'clone',
-  'command',
-  'comparguments',
-  'compcall',
-  'compctl',
-  'compdescribe',
-  'compfiles',
-  'compgroups',
-  'compquote',
-  'comptags',
-  'comptry',
-  'compvalues',
-  'continue',
-  'declare',
-  'dirs',
-  'disable',
-  'disown',
-  'echo',
-  'echotc',
-  'echoti',
-  'emulate',
-  'enable',
-  'eval',
-  'exec',
-  'exit',
-  'export',
-  'false',
-  'fc',
-  'fg',
-  'float',
-  'functions',
-  'getcap',
-  'getln',
-  'getopts',
-  'hash',
-  'history',
-  'integer',
-  'jobs',
-  'kill',
-  'let',
-  'limit',
-  'local',
-  'log',
-  'logout',
-  'noglob',
-  'popd',
-  'print',
-  'printf',
-  'pushd',
-  'pushln',
-  'pwd',
-  'r',
-  'read',
-  'readonly',
-  'rehash',
-  'return',
-  'sched',
-  'set',
-  'setcap',
-  'setopt',
-  'shift',
-  'source',
-  'stat',
-  'suspend',
-  'test',
-  'times',
-  'trap',
-  'true',
-  'ttyctl',
-  'type',
-  'typeset',
-  'ulimit',
-  'umask',
-  'unalias',
-  'unfunction',
-  'unhash',
-  'unlimit',
-  'unset',
-  'unsetopt',
-  'vared',
-  'wait',
-  'whence',
-  'where',
-  'which',
-  'zcompile',
-  'zformat',
-  'zftp',
-  'zle',
-  'zmodload',
-  'zparseopts',
-  'zprof',
-  'zpty',
-  'zregexparse',
-  'zsocket',
-  'zstyle',
-  'ztcp'
-])
+const BUILTINS = new Set(
+  `. : alias autoload bg bindkey break builtin bye cap cd chdir clone command
+  comparguments compcall compctl compdescribe compfiles compgroups compquote
+  comptags comptry compvalues continue declare dirs disable disown echo echotc
+  echoti emulate enable eval exec exit export false fc fg float functions
+  getcap getln getopts hash history integer jobs kill let limit local log
+  logout noglob popd print printf pushd pushln pwd r read readonly rehash
+  return sched set setcap setopt shift source stat suspend test times trap
+  true ttyctl type typeset ulimit umask unalias unfunction unhash unlimit
+  unset unsetopt vared wait whence where which zcompile zformat zftp zle
+  zmodload zparseopts zprof zpty zregexparse zsocket zstyle ztcp`.split(/\s+/)
+)
 
 // Precommand modifiers
-const PRECOMMANDS = new Set([
-  'builtin',
-  'command',
-  'exec',
-  'nocorrect',
-  'noglob',
-  'pkexec',
-  'sudo',
-  'doas',
-  '-'
-])
+const PRECOMMANDS = new Set(`builtin command exec nocorrect noglob pkexec sudo doas -`.split(/\s+/))
 
 // Command separators
 const COMMAND_SEPARATORS = new Set([';', ';;', ';&', ';|', '&&', '||', '|', '|&', '&', '&!', '&|'])
@@ -259,6 +126,11 @@ const REDIRECTION_PATTERNS = [
   /^</, // input
   /^>/ // output
 ]
+
+type MatchResult = {
+  text: string
+  unclosed: boolean
+}
 
 /**
  * Tokenize a zsh command line into tokens with their types and positions.
@@ -293,10 +165,7 @@ export function tokenize(input: string): ZshToken[] {
     }
 
     // Check for process substitution <(...) or >(...) - must be before redirections
-    if (
-      (input[pos] === '<' || input[pos] === '>') &&
-      input[pos + 1] === '('
-    ) {
+    if ((input[pos] === '<' || input[pos] === '>') && input[pos + 1] === '(') {
       const result = matchProcessSubstitution(input, pos)
       tokens.push({
         type: 'process-substitution',
@@ -520,10 +389,7 @@ function matchRedirection(input: string, pos: number): string | null {
 /**
  * Match a process substitution <(...) or >(...).
  */
-function matchProcessSubstitution(
-  input: string,
-  pos: number
-): { text: string; unclosed: boolean } {
+function matchProcessSubstitution(input: string, pos: number): MatchResult {
   let depth = 1
   let i = pos + 2 // Skip <( or >(
   while (i < input.length && depth > 0) {
@@ -540,10 +406,7 @@ function matchProcessSubstitution(
 /**
  * Match arithmetic expansion $((...)).
  */
-function matchArithmeticExpansion(
-  input: string,
-  pos: number
-): { text: string; unclosed: boolean } {
+function matchArithmeticExpansion(input: string, pos: number): MatchResult {
   let depth = 2 // Start with (( depth
   let i = pos + 3 // Skip $((
   while (i < input.length && depth > 0) {
@@ -560,10 +423,7 @@ function matchArithmeticExpansion(
 /**
  * Match command substitution $(...).
  */
-function matchCommandSubstitution(
-  input: string,
-  pos: number
-): { text: string; unclosed: boolean } {
+function matchCommandSubstitution(input: string, pos: number): MatchResult {
   let depth = 1
   let i = pos + 2 // Skip $(
   while (i < input.length && depth > 0) {
@@ -591,10 +451,7 @@ function matchCommandSubstitution(
 /**
  * Match dollar-quoted string $'...'.
  */
-function matchDollarQuotedString(
-  input: string,
-  pos: number
-): { text: string; unclosed: boolean } {
+function matchDollarQuotedString(input: string, pos: number): MatchResult {
   let i = pos + 2 // Skip $'
   while (i < input.length) {
     if (input[i] === '\\') {
@@ -612,10 +469,7 @@ function matchDollarQuotedString(
 /**
  * Match single-quoted string '...'.
  */
-function matchSingleQuotedString(
-  input: string,
-  pos: number
-): { text: string; unclosed: boolean } {
+function matchSingleQuotedString(input: string, pos: number): MatchResult {
   let i = pos + 1 // Skip opening '
   while (i < input.length) {
     if (input[i] === "'") {
@@ -629,10 +483,7 @@ function matchSingleQuotedString(
 /**
  * Match double-quoted string "...".
  */
-function matchDoubleQuotedString(
-  input: string,
-  pos: number
-): { text: string; unclosed: boolean } {
+function matchDoubleQuotedString(input: string, pos: number): MatchResult {
   let i = pos + 1 // Skip opening "
   while (i < input.length) {
     if (input[i] === '\\') {
@@ -650,10 +501,7 @@ function matchDoubleQuotedString(
 /**
  * Match backtick command substitution `...`.
  */
-function matchBacktickSubstitution(
-  input: string,
-  pos: number
-): { text: string; unclosed: boolean } {
+function matchBacktickSubstitution(input: string, pos: number): MatchResult {
   let i = pos + 1 // Skip opening `
   while (i < input.length) {
     if (input[i] === '\\') {
