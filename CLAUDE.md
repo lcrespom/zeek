@@ -62,5 +62,4 @@ The tool is designed to be invoked from the Zsh shell via the `zeek` alias defin
 
 ### Configuration
 
-Configuration is stored as shell variables in `zeek.zsh` (prefix `ZEEK_`). The Node.js side reads
-these by parsing the Zsh script file directly.
+Configuration is stored as environment variables with prefix `ZEEK_` (exported by `zeek.zsh`).
