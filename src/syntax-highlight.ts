@@ -44,6 +44,7 @@ const tokenColors: Record<ZshTokenType, DecoratorFunc<string>> = {
   assign: fgColorFunc(COLOR_YELLOW),
   redirection: fgColorFunc(COLOR_WHITE),
   comment: fgColorFunc(COLOR_GREY),
+  variable: fgColorFunc(COLOR_YELLOW),
   default: fgColorFunc(COLOR_CYAN)
 }
 

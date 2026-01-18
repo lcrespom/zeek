@@ -26,6 +26,7 @@
  * - assign: Parameter assignments (VAR=value)
  * - redirection: Redirection operators (<, >, >>, etc.)
  * - comment: Comments (# ...)
+ * - variable: Variable/parameter references ($VAR, ${VAR}, $1, etc.)
  * - default: Everything else (plain arguments)
  *
  * ## Simplifications / Gaps:
@@ -73,6 +74,7 @@ export type ZshTokenType =
   | 'assign'
   | 'redirection'
   | 'comment'
+  | 'variable'
   | 'default'
 
 /** A token with its type and position in the input */
@@ -210,6 +212,12 @@ export function tokenize(input: string): ZshToken[] {
       result = matchDollarQuotedString(input, pos)
       const type = result.unclosed ? 'dollar-quoted-argument-unclosed' : 'dollar-quoted-argument'
       pos = pushToken(tokens, type, result.text, pos)
+      expectCommand = false
+      continue
+    }
+    // Variable/parameter reference $VAR, ${VAR}, $1, etc.
+    if (ch === '$' && (match = matchVariable(input, pos))) {
+      pos = pushToken(tokens, 'variable', match, pos)
       expectCommand = false
       continue
     }
@@ -419,6 +427,42 @@ function matchBacktickSubstitution(input: string, pos: number): MatchResult {
     i++
   }
   return { text: input.slice(pos), unclosed: true }
+}
+
+/**
+ * Match a variable/parameter reference ($VAR, ${VAR}, $1, etc.).
+ */
+function matchVariable(input: string, pos: number): string | null {
+  if (input[pos] !== '$') return null
+  const remaining = input.slice(pos)
+  // ${...} - braced parameter expansion
+  if (remaining[1] === '{') {
+    let depth = 1
+    let i = 2
+    while (i < remaining.length && depth > 0) {
+      if (remaining[i] === '{') depth++
+      else if (remaining[i] === '}') depth--
+      i++
+    }
+    if (depth === 0) {
+      return remaining.slice(0, i)
+    }
+    return null // Unclosed brace - let it be handled as word
+  }
+  // Special parameters: $?, $$, $!, $#, $@, $*, $-, $_
+  if (remaining.length > 1 && '?$!#@*-_'.includes(remaining[1])) {
+    return remaining.slice(0, 2)
+  }
+  // Positional parameters: $0, $1, ..., $9
+  if (remaining.length > 1 && /\d/.test(remaining[1])) {
+    return remaining.slice(0, 2)
+  }
+  // Named variable: $VAR (identifier chars)
+  const varMatch = remaining.match(/^\$[a-zA-Z_][a-zA-Z0-9_]*/)
+  if (varMatch) {
+    return varMatch[0]
+  }
+  return null
 }
 
 /**

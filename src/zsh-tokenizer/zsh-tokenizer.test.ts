@@ -354,6 +354,89 @@ describe('ZSH Tokenizer', () => {
     })
   })
 
+  describe('Variables', () => {
+    test('Simple variable $VAR', () => {
+      const tokens = tokenize('echo $PATH')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[1].text, '$PATH')
+    })
+
+    test('Braced variable ${VAR}', () => {
+      const tokens = tokenize('echo ${HOME}')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[1].text, '${HOME}')
+    })
+
+    test('Positional parameter $1', () => {
+      const tokens = tokenize('echo $1')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[1].text, '$1')
+    })
+
+    test('Special parameter $?', () => {
+      const tokens = tokenize('echo $?')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[1].text, '$?')
+    })
+
+    test('Special parameter $$', () => {
+      const tokens = tokenize('echo $$')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[1].text, '$$')
+    })
+
+    test('Special parameter $#', () => {
+      const tokens = tokenize('echo $#')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[1].text, '$#')
+    })
+
+    test('Special parameter $@', () => {
+      const tokens = tokenize('echo $@')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[1].text, '$@')
+    })
+
+    test('Special parameter $*', () => {
+      const tokens = tokenize('echo $*')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[1].text, '$*')
+    })
+
+    test('Braced variable with default ${VAR:-default}', () => {
+      const tokens = tokenize('echo ${VAR:-default}')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[1].text, '${VAR:-default}')
+    })
+
+    test('Braced variable with substitution ${VAR/old/new}', () => {
+      const tokens = tokenize('echo ${PATH//:/ }')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[1].text, '${PATH//:/ }')
+    })
+
+    test('Multiple variables', () => {
+      const tokens = tokenize('echo $HOME $USER $SHELL')
+      assert.equal(tokens[1].type, 'variable')
+      assert.equal(tokens[2].type, 'variable')
+      assert.equal(tokens[3].type, 'variable')
+    })
+
+    test('Variable vs arithmetic expansion', () => {
+      const arith = tokenize('echo $((1+1))')
+      const variable = tokenize('echo $VAR')
+      assert.equal(arith[1].type, 'arithmetic-expansion')
+      assert.equal(variable[1].type, 'variable')
+    })
+
+    test('Variable vs command substitution', () => {
+      const cmd = tokenize('echo $(date)')
+      const variable = tokenize('echo $VAR')
+      assert.equal(cmd[1].type, 'command-substitution')
+      assert.equal(variable[1].type, 'variable')
+    })
+  })
+
   describe('Assignments', () => {
     test('Simple assignment', () => {
       const tokens = tokenize('VAR=value')
