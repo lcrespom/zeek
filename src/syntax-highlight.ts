@@ -25,7 +25,7 @@ const tokenColors: Record<ZshTokenType, DecoratorFunc<string>> = {
   command: fgColorFunc(COLOR_GREEN),
   precommand: fgColorFunc(COLOR_GREEN),
   commandseparator: fgColorFunc(COLOR_WHITE),
-  path: fgColorFunc(COLOR_CYAN),
+  path: fgColorFunc(COLOR_YELLOW),
   globbing: fgColorFunc(COLOR_ORANGE),
   'history-expansion': fgColorFunc(COLOR_PURPLE),
   'single-hyphen-option': fgColorFunc(COLOR_PURPLE),

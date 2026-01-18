@@ -662,6 +662,8 @@ function looksLikePath(word: string): boolean {
   if (word.startsWith('./') || word.startsWith('../')) return true
   // Home directory
   if (word.startsWith('~/')) return true
+  // Assume that if it contains one or more slash and dot, it's a path
+  if (word.includes('/') && word.includes('.')) return true
   return false
 }
 
