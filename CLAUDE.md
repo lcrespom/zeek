@@ -1,19 +1,22 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this
+repository.
 
 ## Project Overview
 
-Zeek is a Zsh shell enhancement tool that provides interactive, syntax-highlighted popups for command history and directory navigation. It combines Zsh scripting with a Node.js/TypeScript CLI backend.
+Zeek is a Zsh shell enhancement tool that provides interactive, syntax-highlighted popups for
+command history and directory navigation. It combines Zsh scripting with a Node.js/TypeScript CLI
+backend.
 
 ## Build & Run Commands
 
-```bash
+```shell
 # Run the CLI directly (requires Node.js 24+)
 node src/index.ts <command> [args]
 
 # Run tests
-node --test src/bash-parser/parser.test.ts
+node --test src/zsh-tokenizer/zsh-tokenizer.test.ts
 
 # Install dependencies
 npm install
@@ -38,11 +41,15 @@ The tool is designed to be invoked from the Zsh shell via the `zeek` alias defin
 
 ### Key Modules
 
-- **`src/history-popup.ts`**: Main popup UI class using `node-terminal-menu` for interactive menus with filtering
-- **`src/line-editor.ts`**: Custom line editor implementation handling cursor movement, word navigation, and text editing
-- **`src/syntax-highlight.ts`**: Bash command syntax highlighting using AST-based parsing
-- **`src/bash-parser/parser.ts`**: Wrapper around `bash-parser` with error recovery for partial/incomplete commands
-- **`src/terminal.ts`**: ANSI escape sequence utilities for cursor control, colors, and screen management
+- **`src/history-popup.ts`**: Main popup UI class using `node-terminal-menu` for interactive menus
+  with filtering
+- **`src/line-editor.ts`**: Custom line editor implementation handling cursor movement, word
+  navigation, and text editing
+- **`src/syntax-highlight.ts`**: Zsh command syntax highlighting using token-based colorization
+- **`src/zsh-tokenizer/zsh-tokenizer.ts`**: Lightweight zsh tokenizer compatible with
+  zsh-syntax-highlighting token types
+- **`src/terminal.ts`**: ANSI escape sequence utilities for cursor control, colors, and screen
+  management
 - **`src/config.ts`**: Reads configuration from `ZEEK_*` variables defined in `zeek.zsh`
 
 ### Data Flow
@@ -55,4 +62,5 @@ The tool is designed to be invoked from the Zsh shell via the `zeek` alias defin
 
 ### Configuration
 
-Configuration is stored as shell variables in `zeek.zsh` (prefix `ZEEK_`). The Node.js side reads these by parsing the Zsh script file directly.
+Configuration is stored as shell variables in `zeek.zsh` (prefix `ZEEK_`). The Node.js side reads
+these by parsing the Zsh script file directly.
