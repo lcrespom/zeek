@@ -1,23 +1,23 @@
 # ------------------------- Configuration -------------------------
 # Zeek menu size, in width x height chars. Negative numbers indicate distance to the terminal edges.
-ZEEK_MENU_SIZE=120x40
+export ZEEK_MENU_SIZE=120x40
 # Zeek menu row. Positive numbers refer to the top row, negative numbers to the bottom row.
-ZEEK_MENU_ROW=2
+export ZEEK_MENU_ROW=2
 # Line editor position relative to the menu. If true, the line editor will be shown above the menu;
 # if false, it will be shown below the menu.
-ZEEK_LINE_EDIT_OVER_MENU=false
+export ZEEK_LINE_EDIT_OVER_MENU=false
 
 # Maximun number of command history lines to get from zsh. Duplicates are removed, so the history popup
 # will probably have fewer entries.
-ZEEK_MAX_CMD_HISTORY_LINES=2000
+export ZEEK_MAX_CMD_HISTORY_LINES=2000
 
 # Maximun number of directory history lines to get from zsh. Duplicates are not stored, so the directory
 # history popup will have exactly this many entries (or fewer, if not that many directories have been
 # visited).
-ZEEK_MAX_DIR_HISTORY_LINES=200
+export ZEEK_MAX_DIR_HISTORY_LINES=200
 
 # Derive syntax highlighting styles as JSON from zsh-syntax-highlighting settings, if they exist
-[[ -n $ZSH_HIGHLIGHT_STYLES ]] && ZEEK_HIGHLIGHT_STYLES="{$(for key value in "${(@kv)ZSH_HIGHLIGHT_STYLES}"; do printf '"%s": "%s", ' "$key" "$value"; done | sed 's/, $//')}"
+[[ -n $ZSH_HIGHLIGHT_STYLES ]] && export ZEEK_HIGHLIGHT_STYLES="{$(for key value in "${(@kv)ZSH_HIGHLIGHT_STYLES}"; do printf '"%s": "%s", ' "$key" "$value"; done | sed 's/, $//')}"
 
 export ZEEK_DIR="${0:A:h}"
 alias zeek='node $ZEEK_DIR/src/index.ts </dev/tty 3>&1 1>&2'
