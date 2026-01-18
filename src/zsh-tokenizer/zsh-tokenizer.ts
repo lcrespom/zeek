@@ -132,6 +132,18 @@ type MatchResult = {
   unclosed: boolean
 }
 
+/** Helper to create and push a token, returning the new position */
+function pushToken(tokens: ZshToken[], type: ZshTokenType, text: string, start: number): number {
+  tokens.push({ type, text, start, end: start + text.length - 1 })
+  return start + text.length
+}
+
+/** Determine next expectCommand state based on token type */
+function nextExpectCommand(type: ZshTokenType): boolean {
+  if (type === 'precommand' || type === 'assign' || type === 'commandseparator') return true
+  return false
+}
+
 /**
  * Tokenize a zsh command line into tokens with their types and positions.
  *
@@ -141,7 +153,7 @@ type MatchResult = {
 export function tokenize(input: string): ZshToken[] {
   const tokens: ZshToken[] = []
   let pos = 0
-  let expectCommand = true // Whether next word should be treated as a command
+  let expectCommand = true
 
   while (pos < input.length) {
     // Skip whitespace
@@ -149,198 +161,100 @@ export function tokenize(input: string): ZshToken[] {
       pos++
       continue
     }
-
-    const startPos = pos
-
-    // Check for comment
-    if (input[pos] === '#') {
-      const text = input.slice(pos)
-      tokens.push({
-        type: 'comment',
-        text,
-        start: pos,
-        end: input.length - 1
-      })
+    // Get current characters
+    const ch = input[pos]
+    const ch2 = input.slice(pos, pos + 2)
+    const ch3 = input.slice(pos, pos + 3)
+    let match: string | null
+    let result: MatchResult
+    // Comment - consumes rest of line
+    if (ch === '#') {
+      pushToken(tokens, 'comment', input.slice(pos), pos)
       break
     }
-
-    // Check for process substitution <(...) or >(...) - must be before redirections
-    if ((input[pos] === '<' || input[pos] === '>') && input[pos + 1] === '(') {
-      const result = matchProcessSubstitution(input, pos)
-      tokens.push({
-        type: 'process-substitution',
-        text: result.text,
-        start: pos,
-        end: pos + result.text.length - 1
-      })
-      pos += result.text.length
+    // Process substitution <(...) or >(...) - must be before redirections
+    if ((ch === '<' || ch === '>') && input[pos + 1] === '(') {
+      result = matchProcessSubstitution(input, pos)
+      pos = pushToken(tokens, 'process-substitution', result.text, pos)
       expectCommand = false
       continue
     }
-
-    // Check for redirections (before command separators because &> is a redirect)
-    const redirMatch = matchRedirection(input, pos)
-    if (redirMatch) {
-      tokens.push({
-        type: 'redirection',
-        text: redirMatch,
-        start: pos,
-        end: pos + redirMatch.length - 1
-      })
-      pos += redirMatch.length
+    // Redirections (before command separators because &> is a redirect)
+    if ((match = matchRedirection(input, pos))) {
+      pos = pushToken(tokens, 'redirection', match, pos)
       expectCommand = false
       continue
     }
-
-    // Check for command separators (multi-char first)
-    const sepMatch = matchCommandSeparator(input, pos)
-    if (sepMatch) {
-      tokens.push({
-        type: 'commandseparator',
-        text: sepMatch,
-        start: pos,
-        end: pos + sepMatch.length - 1
-      })
-      pos += sepMatch.length
+    // Command separators
+    if ((match = matchCommandSeparator(input, pos))) {
+      pos = pushToken(tokens, 'commandseparator', match, pos)
       expectCommand = true
       continue
     }
-
-    // Check for arithmetic expansion $((...))
-    if (input.slice(pos, pos + 3) === '$((') {
-      const result = matchArithmeticExpansion(input, pos)
-      tokens.push({
-        type: 'arithmetic-expansion',
-        text: result.text,
-        start: pos,
-        end: pos + result.text.length - 1
-      })
-      pos += result.text.length
+    // Arithmetic expansion $((...))
+    if (ch3 === '$((') {
+      result = matchArithmeticExpansion(input, pos)
+      pos = pushToken(tokens, 'arithmetic-expansion', result.text, pos)
       expectCommand = false
       continue
     }
-
-    // Check for command substitution $(...)
-    if (input.slice(pos, pos + 2) === '$(' && input[pos + 2] !== '(') {
-      const result = matchCommandSubstitution(input, pos)
-      tokens.push({
-        type: 'command-substitution',
-        text: result.text,
-        start: pos,
-        end: pos + result.text.length - 1
-      })
-      pos += result.text.length
+    // Command substitution $(...)
+    if (ch2 === '$(' && input[pos + 2] !== '(') {
+      result = matchCommandSubstitution(input, pos)
+      pos = pushToken(tokens, 'command-substitution', result.text, pos)
       expectCommand = false
       continue
     }
-
-    // Check for dollar-quoted string $'...'
-    if (input.slice(pos, pos + 2) === "$'") {
-      const result = matchDollarQuotedString(input, pos)
-      tokens.push({
-        type: result.unclosed ? 'dollar-quoted-argument-unclosed' : 'dollar-quoted-argument',
-        text: result.text,
-        start: pos,
-        end: pos + result.text.length - 1
-      })
-      pos += result.text.length
+    // Dollar-quoted string $'...'
+    if (ch2 === "$'") {
+      result = matchDollarQuotedString(input, pos)
+      const type = result.unclosed ? 'dollar-quoted-argument-unclosed' : 'dollar-quoted-argument'
+      pos = pushToken(tokens, type, result.text, pos)
       expectCommand = false
       continue
     }
-
-    // Check for single-quoted string
-    if (input[pos] === "'") {
-      const result = matchSingleQuotedString(input, pos)
-      tokens.push({
-        type: result.unclosed ? 'single-quoted-argument-unclosed' : 'single-quoted-argument',
-        text: result.text,
-        start: pos,
-        end: pos + result.text.length - 1
-      })
-      pos += result.text.length
+    // Single-quoted string
+    if (ch === "'") {
+      result = matchSingleQuotedString(input, pos)
+      const type = result.unclosed ? 'single-quoted-argument-unclosed' : 'single-quoted-argument'
+      pos = pushToken(tokens, type, result.text, pos)
       expectCommand = false
       continue
     }
-
-    // Check for double-quoted string
-    if (input[pos] === '"') {
-      const result = matchDoubleQuotedString(input, pos)
-      tokens.push({
-        type: result.unclosed ? 'double-quoted-argument-unclosed' : 'double-quoted-argument',
-        text: result.text,
-        start: pos,
-        end: pos + result.text.length - 1
-      })
-      pos += result.text.length
+    // Double-quoted string
+    if (ch === '"') {
+      result = matchDoubleQuotedString(input, pos)
+      const type = result.unclosed ? 'double-quoted-argument-unclosed' : 'double-quoted-argument'
+      pos = pushToken(tokens, type, result.text, pos)
       expectCommand = false
       continue
     }
-
-    // Check for backtick command substitution
-    if (input[pos] === '`') {
-      const result = matchBacktickSubstitution(input, pos)
-      tokens.push({
-        type: result.unclosed ? 'back-quoted-argument-unclosed' : 'back-quoted-argument',
-        text: result.text,
-        start: pos,
-        end: pos + result.text.length - 1
-      })
-      pos += result.text.length
+    // Backtick command substitution
+    if (ch === '`') {
+      result = matchBacktickSubstitution(input, pos)
+      const type = result.unclosed ? 'back-quoted-argument-unclosed' : 'back-quoted-argument'
+      pos = pushToken(tokens, type, result.text, pos)
       expectCommand = false
       continue
     }
-
-    // Check for history expansion
-    if (input[pos] === '!' && pos + 1 < input.length) {
-      const histMatch = matchHistoryExpansion(input, pos)
-      if (histMatch) {
-        tokens.push({
-          type: 'history-expansion',
-          text: histMatch,
-          start: pos,
-          end: pos + histMatch.length - 1
-        })
-        pos += histMatch.length
-        expectCommand = false
-        continue
-      }
+    // History expansion
+    if (ch === '!' && pos + 1 < input.length && (match = matchHistoryExpansion(input, pos))) {
+      pos = pushToken(tokens, 'history-expansion', match, pos)
+      expectCommand = false
+      continue
     }
-
-    // Match a word (handles word boundaries with quotes/expansions inside)
+    // Word (handles word boundaries with quotes/expansions inside)
     const word = matchWord(input, pos)
     if (word.length > 0) {
       const token = classifyWord(word, expectCommand, pos)
       tokens.push(token)
       pos += word.length
-
-      // Update expectCommand based on what we found
-      if (token.type === 'precommand') {
-        expectCommand = true // Next word is still a command
-      } else if (
-        token.type === 'command' ||
-        token.type === 'builtin' ||
-        token.type === 'reserved-word'
-      ) {
-        expectCommand = false // Following words are arguments
-      } else if (token.type === 'assign') {
-        // After assignment, could be either (VAR=val cmd or just VAR=val)
-        expectCommand = true
-      } else {
-        expectCommand = false
-      }
+      expectCommand = nextExpectCommand(token.type)
       continue
     }
-
-    // Unknown character - advance
-    tokens.push({
-      type: 'unknown-token',
-      text: input[pos],
-      start: pos,
-      end: pos
-    })
-    pos++
+    // Unknown character
+    pos = pushToken(tokens, 'unknown-token', ch, pos)
   }
-
   return tokens
 }
 
@@ -397,10 +311,7 @@ function matchProcessSubstitution(input: string, pos: number): MatchResult {
     else if (input[i] === ')') depth--
     i++
   }
-  return {
-    text: input.slice(pos, i),
-    unclosed: depth > 0
-  }
+  return { text: input.slice(pos, i), unclosed: depth > 0 }
 }
 
 /**
@@ -414,10 +325,7 @@ function matchArithmeticExpansion(input: string, pos: number): MatchResult {
     else if (input[i] === ')' && input[i - 1] !== '\\') depth--
     i++
   }
-  return {
-    text: input.slice(pos, i),
-    unclosed: depth > 0
-  }
+  return { text: input.slice(pos, i), unclosed: depth > 0 }
 }
 
 /**
@@ -442,10 +350,7 @@ function matchCommandSubstitution(input: string, pos: number): MatchResult {
     else if (input[i] === ')') depth--
     i++
   }
-  return {
-    text: input.slice(pos, i),
-    unclosed: depth > 0
-  }
+  return { text: input.slice(pos, i), unclosed: depth > 0 }
 }
 
 /**
@@ -522,37 +427,27 @@ function matchBacktickSubstitution(input: string, pos: number): MatchResult {
 function matchHistoryExpansion(input: string, pos: number): string | null {
   // Must start with !
   if (input[pos] !== '!') return null
-
   const remaining = input.slice(pos)
-
   // !! - previous command
   if (remaining.startsWith('!!')) return '!!'
-
   // !$ - last argument
   if (remaining.startsWith('!$')) return '!$'
-
   // !^ - first argument
   if (remaining.startsWith('!^')) return '!^'
-
   // !* - all arguments
   if (remaining.startsWith('!*')) return '!*'
-
   // !-n - nth previous command
   const negMatch = remaining.match(/^!-\d+/)
   if (negMatch) return negMatch[0]
-
   // !n - command number n
   const numMatch = remaining.match(/^!\d+/)
   if (numMatch) return numMatch[0]
-
   // !?string? - search for string
   const searchMatch = remaining.match(/^!\?[^?]+\??/)
   if (searchMatch) return searchMatch[0]
-
   // !string - most recent command starting with string
   const strMatch = remaining.match(/^![a-zA-Z_][a-zA-Z0-9_]*/)
   if (strMatch) return strMatch[0]
-
   return null
 }
 
@@ -562,13 +457,10 @@ function matchHistoryExpansion(input: string, pos: number): string | null {
 function matchWord(input: string, pos: number): string {
   let i = pos
   const terminators = new Set([' ', '\t', '\n', ';', '&', '|', '<', '>', '#'])
-
   while (i < input.length) {
     const ch = input[i]
-
     // Word terminators (but not ( and ) which can be part of globs/expansions)
     if (terminators.has(ch)) break
-
     // Standalone ( or ) are terminators, but not when preceded by glob chars or $
     if (ch === '(' || ch === ')') {
       // Check if this is part of an extended glob @(...), ?(...), *(...), +(...), !(...)
@@ -591,7 +483,6 @@ function matchWord(input: string, pos: number): string {
       // Otherwise it's a terminator
       break
     }
-
     // Handle quotes embedded in word
     if (ch === '"' || ch === "'" || ch === '`') {
       const quote = ch
@@ -603,7 +494,6 @@ function matchWord(input: string, pos: number): string {
       if (i < input.length) i++ // Skip closing quote
       continue
     }
-
     // Handle $'...' embedded in word
     if (ch === '$' && input[i + 1] === "'") {
       i += 2
@@ -614,7 +504,6 @@ function matchWord(input: string, pos: number): string {
       if (i < input.length) i++
       continue
     }
-
     // Handle $(...) embedded in word
     if (ch === '$' && input[i + 1] === '(') {
       let depth = 1
@@ -626,16 +515,13 @@ function matchWord(input: string, pos: number): string {
       }
       continue
     }
-
     // Handle escape
     if (ch === '\\' && i + 1 < input.length) {
       i += 2
       continue
     }
-
     i++
   }
-
   return input.slice(pos, i)
 }
 
@@ -644,44 +530,36 @@ function matchWord(input: string, pos: number): string {
  */
 function classifyWord(word: string, expectCommand: boolean, start: number): ZshToken {
   const end = start + word.length - 1
-
   // Check for assignment (VAR=value or VAR+=value)
   const assignMatch = word.match(/^[a-zA-Z_][a-zA-Z0-9_]*\+?=/)
   if (assignMatch) {
     return { type: 'assign', text: word, start, end }
   }
-
   // Check for globbing patterns
   if (containsGlob(word)) {
     return { type: 'globbing', text: word, start, end }
   }
-
   // Check for path-like arguments
   if (looksLikePath(word)) {
     return { type: 'path', text: word, start, end }
   }
-
   // In command position
   if (expectCommand) {
     // Check reserved words
     if (RESERVED_WORDS.has(word)) {
       return { type: 'reserved-word', text: word, start, end }
     }
-
     // Check precommands
     if (PRECOMMANDS.has(word)) {
       return { type: 'precommand', text: word, start, end }
     }
-
     // Check builtins
     if (BUILTINS.has(word)) {
       return { type: 'builtin', text: word, start, end }
     }
-
     // Otherwise it's a command
     return { type: 'command', text: word, start, end }
   }
-
   // In argument position
   // Check for options
   if (word.startsWith('--') && word.length > 2) {
@@ -690,7 +568,6 @@ function classifyWord(word: string, expectCommand: boolean, start: number): ZshT
   if (word.startsWith('-') && word.length > 1 && !word.startsWith('--')) {
     return { type: 'single-hyphen-option', text: word, start, end }
   }
-
   // Default argument
   return { type: 'default', text: word, start, end }
 }
@@ -702,25 +579,20 @@ function containsGlob(word: string): boolean {
   // Skip quoted parts when checking for globs
   let inSingleQuote = false
   let inDoubleQuote = false
-
   for (let i = 0; i < word.length; i++) {
     const ch = word[i]
-
     if (ch === '\\' && !inSingleQuote) {
       i++ // Skip escaped character
       continue
     }
-
     if (ch === "'" && !inDoubleQuote) {
       inSingleQuote = !inSingleQuote
       continue
     }
-
     if (ch === '"' && !inSingleQuote) {
       inDoubleQuote = !inDoubleQuote
       continue
     }
-
     if (!inSingleQuote && !inDoubleQuote) {
       // Glob characters
       if (ch === '*' || ch === '?') return true
@@ -733,7 +605,6 @@ function containsGlob(word: string): boolean {
       if ('@?*+!'.includes(ch) && i + 1 < word.length && word[i + 1] === '(') return true
     }
   }
-
   return false
 }
 
