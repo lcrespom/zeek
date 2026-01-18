@@ -7,6 +7,48 @@ export const Config = {
   maxDirHistoryLines: 1000
 }
 
+// Monokai color palette
+const COLOR_GREEN = '#a6e22e'
+const COLOR_FUCHSIA = '#f92672'
+const COLOR_CYAN = '#66d9ef'
+const COLOR_ORANGE = '#fd971f'
+const COLOR_PURPLE = '#ae81ff'
+const COLOR_YELLOW = '#e6db74'
+const COLOR_GREY = '#75715e'
+const COLOR_WHITE = '#ffffff'
+
+const DEFAULT_SYNTAX_HIGHLIGHT = {
+  'unknown-token': COLOR_FUCHSIA,
+  'reserved-word': COLOR_FUCHSIA,
+  builtin: COLOR_GREEN,
+  command: COLOR_GREEN,
+  precommand: COLOR_GREEN,
+  commandseparator: COLOR_WHITE,
+  path: COLOR_YELLOW,
+  globbing: COLOR_ORANGE,
+  'history-expansion': COLOR_PURPLE,
+  'single-hyphen-option': COLOR_PURPLE,
+  'double-hyphen-option': COLOR_PURPLE,
+  'single-quoted-argument': COLOR_ORANGE,
+  'single-quoted-argument-unclosed': COLOR_FUCHSIA,
+  'double-quoted-argument': COLOR_ORANGE,
+  'double-quoted-argument-unclosed': COLOR_FUCHSIA,
+  'dollar-quoted-argument': COLOR_ORANGE,
+  'dollar-quoted-argument-unclosed': COLOR_FUCHSIA,
+  'back-quoted-argument': COLOR_CYAN,
+  'back-quoted-argument-unclosed': COLOR_FUCHSIA,
+  'command-substitution': COLOR_CYAN,
+  'process-substitution': COLOR_CYAN,
+  'arithmetic-expansion': COLOR_PURPLE,
+  assign: COLOR_YELLOW,
+  redirection: COLOR_WHITE,
+  comment: COLOR_GREY,
+  variable: COLOR_YELLOW,
+  default: COLOR_CYAN
+}
+
+export const SyntaxHighlight = DEFAULT_SYNTAX_HIGHLIGHT
+
 export function initConfig(): boolean {
   // Build config from environment variables starting with ZEEK_
   const configMap: Record<string, string> = {}

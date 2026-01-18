@@ -1,51 +1,17 @@
 import { tokenize, type ZshToken, type ZshTokenType } from './zsh-tokenizer/zsh-tokenizer.ts'
 import { fgColorFunc, underline } from './terminal.ts'
+import { SyntaxHighlight } from './config.ts'
+
+// Build color functions from SyntaxHighlight config
+const tokenColors = {} as Record<ZshTokenType, (s: string) => string>
+for (const [tokenType, color] of Object.entries(SyntaxHighlight))
+  tokenColors[tokenType as ZshTokenType] = fgColorFunc(color)
+tokenColors.builtin = composeDecorators(underline, tokenColors.builtin)
 
 type DecoratorFunc<T> = (arg: T) => T
 
 function composeDecorators<T>(f: DecoratorFunc<T>, g: DecoratorFunc<T>): DecoratorFunc<T> {
   return (arg: T) => g(f(arg))
-}
-
-// Monokai color palette
-const COLOR_GREEN = '#a6e22e'
-const COLOR_FUCHSIA = '#f92672'
-const COLOR_CYAN = '#66d9ef'
-const COLOR_ORANGE = '#fd971f'
-const COLOR_PURPLE = '#ae81ff'
-const COLOR_YELLOW = '#e6db74'
-const COLOR_GREY = '#75715e'
-const COLOR_WHITE = '#ffffff'
-
-// Color functions for each token type (zsh-syntax-highlighting compatible)
-const tokenColors: Record<ZshTokenType, DecoratorFunc<string>> = {
-  'unknown-token': fgColorFunc(COLOR_FUCHSIA),
-  'reserved-word': fgColorFunc(COLOR_FUCHSIA),
-  builtin: composeDecorators(underline, fgColorFunc(COLOR_GREEN)),
-  command: fgColorFunc(COLOR_GREEN),
-  precommand: fgColorFunc(COLOR_GREEN),
-  commandseparator: fgColorFunc(COLOR_WHITE),
-  path: fgColorFunc(COLOR_YELLOW),
-  globbing: fgColorFunc(COLOR_ORANGE),
-  'history-expansion': fgColorFunc(COLOR_PURPLE),
-  'single-hyphen-option': fgColorFunc(COLOR_PURPLE),
-  'double-hyphen-option': fgColorFunc(COLOR_PURPLE),
-  'single-quoted-argument': fgColorFunc(COLOR_ORANGE),
-  'single-quoted-argument-unclosed': fgColorFunc(COLOR_FUCHSIA),
-  'double-quoted-argument': fgColorFunc(COLOR_ORANGE),
-  'double-quoted-argument-unclosed': fgColorFunc(COLOR_FUCHSIA),
-  'dollar-quoted-argument': fgColorFunc(COLOR_ORANGE),
-  'dollar-quoted-argument-unclosed': fgColorFunc(COLOR_FUCHSIA),
-  'back-quoted-argument': fgColorFunc(COLOR_CYAN),
-  'back-quoted-argument-unclosed': fgColorFunc(COLOR_FUCHSIA),
-  'command-substitution': fgColorFunc(COLOR_CYAN),
-  'process-substitution': fgColorFunc(COLOR_CYAN),
-  'arithmetic-expansion': fgColorFunc(COLOR_PURPLE),
-  assign: fgColorFunc(COLOR_YELLOW),
-  redirection: fgColorFunc(COLOR_WHITE),
-  comment: fgColorFunc(COLOR_GREY),
-  variable: fgColorFunc(COLOR_YELLOW),
-  default: fgColorFunc(COLOR_CYAN)
 }
 
 /**
