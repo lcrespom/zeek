@@ -17,37 +17,40 @@ const COLOR_YELLOW = '#e6db74'
 const COLOR_GREY = '#75715e'
 const COLOR_WHITE = '#ffffff'
 
-const DEFAULT_SYNTAX_HIGHLIGHT = {
-  'unknown-token': COLOR_FUCHSIA,
-  'reserved-word': COLOR_FUCHSIA,
-  builtin: COLOR_GREEN,
-  command: COLOR_GREEN,
-  precommand: COLOR_GREEN,
-  commandseparator: COLOR_WHITE,
-  path: COLOR_YELLOW,
-  globbing: COLOR_ORANGE,
-  'history-expansion': COLOR_PURPLE,
-  'single-hyphen-option': COLOR_PURPLE,
-  'double-hyphen-option': COLOR_PURPLE,
-  'single-quoted-argument': COLOR_ORANGE,
-  'single-quoted-argument-unclosed': COLOR_FUCHSIA,
-  'double-quoted-argument': COLOR_ORANGE,
-  'double-quoted-argument-unclosed': COLOR_FUCHSIA,
-  'dollar-quoted-argument': COLOR_ORANGE,
-  'dollar-quoted-argument-unclosed': COLOR_FUCHSIA,
-  'back-quoted-argument': COLOR_CYAN,
-  'back-quoted-argument-unclosed': COLOR_FUCHSIA,
-  'command-substitution': COLOR_CYAN,
-  'process-substitution': COLOR_CYAN,
-  'arithmetic-expansion': COLOR_PURPLE,
-  assign: COLOR_YELLOW,
-  redirection: COLOR_WHITE,
-  comment: COLOR_GREY,
-  variable: COLOR_YELLOW,
-  default: COLOR_CYAN
+// Default syntax highlighting styles using Monokai colors
+// Values are style strings: "fg=#hexcolor" or zsh-syntax-highlighting format
+const DEFAULT_SYNTAX_HIGHLIGHT: Record<string, string> = {
+  'unknown-token': `fg=${COLOR_FUCHSIA}`,
+  'reserved-word': `fg=${COLOR_FUCHSIA}`,
+  builtin: `fg=${COLOR_GREEN},underline`,
+  command: `fg=${COLOR_GREEN}`,
+  precommand: `fg=${COLOR_GREEN}`,
+  commandseparator: `fg=${COLOR_WHITE}`,
+  path: `fg=${COLOR_YELLOW}`,
+  globbing: `fg=${COLOR_ORANGE}`,
+  'history-expansion': `fg=${COLOR_PURPLE}`,
+  'single-hyphen-option': `fg=${COLOR_PURPLE}`,
+  'double-hyphen-option': `fg=${COLOR_PURPLE}`,
+  'single-quoted-argument': `fg=${COLOR_ORANGE}`,
+  'single-quoted-argument-unclosed': `fg=${COLOR_FUCHSIA}`,
+  'double-quoted-argument': `fg=${COLOR_ORANGE}`,
+  'double-quoted-argument-unclosed': `fg=${COLOR_FUCHSIA}`,
+  'dollar-quoted-argument': `fg=${COLOR_ORANGE}`,
+  'dollar-quoted-argument-unclosed': `fg=${COLOR_FUCHSIA}`,
+  'back-quoted-argument': `fg=${COLOR_CYAN}`,
+  'back-quoted-argument-unclosed': `fg=${COLOR_FUCHSIA}`,
+  'command-substitution': `fg=${COLOR_CYAN}`,
+  'process-substitution': `fg=${COLOR_CYAN}`,
+  'arithmetic-expansion': `fg=${COLOR_PURPLE}`,
+  assign: `fg=${COLOR_YELLOW}`,
+  redirection: `fg=${COLOR_WHITE}`,
+  comment: `fg=${COLOR_GREY}`,
+  variable: `fg=${COLOR_YELLOW}`,
+  default: `fg=${COLOR_CYAN}`
 }
 
-export const SyntaxHighlight = DEFAULT_SYNTAX_HIGHLIGHT
+// Mutable syntax highlight config that can be overridden
+export const SyntaxHighlight: Record<string, string> = { ...DEFAULT_SYNTAX_HIGHLIGHT }
 
 export function initConfig(): boolean {
   // Build config from environment variables starting with ZEEK_
@@ -89,5 +92,25 @@ function applyConfig(configMap: Record<string, string>) {
   if (configMap.ZEEK_MAX_DIR_HISTORY_LINES) {
     const maxDirLines = parseInt(configMap.ZEEK_MAX_DIR_HISTORY_LINES, 10)
     if (!isNaN(maxDirLines)) Config.maxDirHistoryLines = maxDirLines
+  }
+  if (configMap.ZEEK_HIGHLIGHT_STYLES) {
+    applyHighlightStyles(configMap.ZEEK_HIGHLIGHT_STYLES)
+  }
+}
+
+/**
+ * Parse ZEEK_HIGHLIGHT_STYLES JSON and merge with defaults.
+ * Format: {"token-type": "fg=color,bg=color,style,...", ...}
+ */
+function applyHighlightStyles(jsonString: string) {
+  try {
+    const styles = JSON.parse(jsonString) as Record<string, string>
+    for (const [tokenType, style] of Object.entries(styles)) {
+      if (typeof style === 'string' && style.length > 0) {
+        SyntaxHighlight[tokenType] = style
+      }
+    }
+  } catch {
+    // Invalid JSON - silently ignore
   }
 }

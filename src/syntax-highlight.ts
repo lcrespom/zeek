@@ -1,18 +1,11 @@
 import { tokenize, type ZshToken, type ZshTokenType } from './zsh-tokenizer/zsh-tokenizer.ts'
-import { fgColorFunc, underline } from './terminal.ts'
+import { parseStyleString } from './terminal.ts'
 import { SyntaxHighlight } from './config.ts'
 
 // Build color functions from SyntaxHighlight config
 const tokenColors = {} as Record<ZshTokenType, (s: string) => string>
-for (const [tokenType, color] of Object.entries(SyntaxHighlight))
-  tokenColors[tokenType as ZshTokenType] = fgColorFunc(color)
-tokenColors.builtin = composeDecorators(underline, tokenColors.builtin)
-
-type DecoratorFunc<T> = (arg: T) => T
-
-function composeDecorators<T>(f: DecoratorFunc<T>, g: DecoratorFunc<T>): DecoratorFunc<T> {
-  return (arg: T) => g(f(arg))
-}
+for (const [tokenType, style] of Object.entries(SyntaxHighlight))
+  tokenColors[tokenType as ZshTokenType] = parseStyleString(style)
 
 /**
  * Tokenize and highlight a command line, returning tokens with positions.
