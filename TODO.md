@@ -4,7 +4,7 @@
   - [ ] Use `which` when possible (check performance)
   - Colors
     - [ ] Highlight matched text (complex)
-    - [ ] Make palette configurable via ZEEK\_\* variables
+    - [x] Make palette configurable via ZEEK\_\* variables
     - [ ] memoize highlighted lines => just memoize `which`, when implemented
 - File completion
   - [ ] Replicate nash look&feel
@@ -14,8 +14,7 @@
 - Bugs
   - [ ] Fix menu bug: duplicate last line when ZEEK_MENU_ROW=1
     - Currently fixed with workaround: if ZEEK_MENU_ROW=1, then set it to 2
-  - Fix syntax highlight bug: some commands fail to highlight
-    - [ ] Files in redirects
+  - [x] Fix syntax highlight bug: some commands fail to highlight
 
 ## Full ToDo with done tasks
 
