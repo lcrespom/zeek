@@ -2,10 +2,17 @@ import { tokenize, type ZshToken, type ZshTokenType } from './zsh-tokenizer/zsh-
 import { parseStyleString } from './terminal.ts'
 import { SyntaxHighlight } from './config.ts'
 
-// Build color functions from SyntaxHighlight config
-const tokenColors = {} as Record<ZshTokenType, (s: string) => string>
-for (const [tokenType, style] of Object.entries(SyntaxHighlight))
-  tokenColors[tokenType as ZshTokenType] = parseStyleString(style)
+// Build color functions lazily from SyntaxHighlight config (after initConfig has run)
+let tokenColors: Record<ZshTokenType, (s: string) => string> | null = null
+
+function getTokenColors(): Record<ZshTokenType, (s: string) => string> {
+  if (!tokenColors) {
+    tokenColors = {} as Record<ZshTokenType, (s: string) => string>
+    for (const [tokenType, style] of Object.entries(SyntaxHighlight))
+      tokenColors[tokenType as ZshTokenType] = parseStyleString(style)
+  }
+  return tokenColors
+}
 
 /**
  * Tokenize and highlight a command line, returning tokens with positions.
@@ -18,7 +25,7 @@ export function highlight(line: string): ZshToken[] {
  * Apply color to a single token.
  */
 function applyTokenColor(text: string, token: ZshToken): string {
-  const colorFunc = tokenColors[token.type]
+  const colorFunc = getTokenColors()[token.type]
   return colorFunc(text)
 }
 
