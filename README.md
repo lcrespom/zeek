@@ -80,12 +80,40 @@ The architecture is a combination of **Zsh shell scripting** and **Node.js/TypeS
    - Renders an interactive menu with keyboard navigation
    - Writes the selected item back to Zsh via `/dev/fd/3`
 
+## Configuration
+
+Zeek is configured via environment variables defined in `zeek.zsh`. You can customize these values
+by editing the file or setting them in your `~/.zshrc` before sourcing `zeek.zsh`.
+
+| Variable                      | Description                                     | Default   |
+| ----------------------------- | ----------------------------------------------- | --------- |
+| `ZEEK_MENU_SIZE`              | Menu dimensions as `WIDTHxHEIGHT`               | `120x40`  |
+| `ZEEK_MENU_ROW`               | Row position (positive=top, negative=bottom)   | `2`       |
+| `ZEEK_LINE_EDIT_OVER_MENU`    | Show line editor above menu (`true`/`false`)   | `false`   |
+| `ZEEK_MAX_CMD_HISTORY_LINES`  | Max command history lines to load              | `2000`    |
+| `ZEEK_MAX_DIR_HISTORY_LINES`  | Max directory history entries                  | `200`     |
+
+### Syntax Highlighting
+
+Zeek uses a Monokai-inspired color scheme by default for syntax highlighting. If you have
+[zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) installed, Zeek
+will automatically inherit your `ZSH_HIGHLIGHT_STYLES` settings, so both your command line and
+Zeek's history popup will use the same colors.
+
+The style format supports:
+- **Foreground colors**: `fg=green`, `fg=#ff0000`, `fg=123` (256-color)
+- **Background colors**: `bg=black`, `bg=#000000`
+- **Styles**: `bold`, `dim`, `italic`, `underline`, `blink`, `reverse`, `strikethrough`
+- **Combined**: `fg=cyan,bold,underline`
+
 ## Technical Highlights
 
-1. **Bash Parser**: Custom bash parser to enable syntax highlighting
+1. **Zsh Tokenizer**: Custom zsh tokenizer for syntax highlighting
 
-   - Identifies commands, builtins, parameters, redirects, quotes, etc.
-   - Applies appropriate colors to each element
+   - Compatible with zsh-syntax-highlighting token types
+   - Identifies commands, builtins, reserved words, options, variables, redirects, quotes, etc.
+   - Supports variables (`$VAR`, `${VAR}`, `$1`, `$?`), command/process substitution, arithmetic expansion
+   - Applies configurable colors to each token type
 
 2. **Interactive Line Editor**:
 
@@ -101,5 +129,6 @@ The architecture is a combination of **Zsh shell scripting** and **Node.js/TypeS
    - Preserves cursor position
 
 4. **Configuration**:
-   - Reads settings from the Zsh script itself
+   - Reads settings from `ZEEK_*` environment variables
+   - Inherits syntax highlighting from zsh-syntax-highlighting if available
    - Configurable menu size, position, and history limits

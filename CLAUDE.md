@@ -62,4 +62,29 @@ The tool is designed to be invoked from the Zsh shell via the `zeek` alias defin
 
 ### Configuration
 
-Configuration is stored as environment variables with prefix `ZEEK_` (exported by `zeek.zsh`).
+Configuration is stored as environment variables with prefix `ZEEK_` (exported by `zeek.zsh`):
+
+- `ZEEK_MENU_SIZE`: Menu dimensions as `WIDTHxHEIGHT` (default: `120x40`)
+- `ZEEK_MENU_ROW`: Row position, positive=top, negative=bottom (default: `2`)
+- `ZEEK_LINE_EDIT_OVER_MENU`: Show line editor above menu (default: `false`)
+- `ZEEK_MAX_CMD_HISTORY_LINES`: Max command history lines (default: `2000`)
+- `ZEEK_MAX_DIR_HISTORY_LINES`: Max directory history entries (default: `200`)
+- `ZEEK_HIGHLIGHT_STYLES`: JSON object with syntax highlighting overrides (auto-generated from
+  `ZSH_HIGHLIGHT_STYLES` if zsh-syntax-highlighting is installed)
+
+### Syntax Highlighting System
+
+The syntax highlighting system has three layers:
+
+1. **Tokenizer** (`src/zsh-tokenizer/zsh-tokenizer.ts`): Parses command lines into tokens with types
+   compatible with zsh-syntax-highlighting (command, builtin, variable, path, etc.)
+
+2. **Config** (`src/config.ts`): Defines default Monokai-based styles for each token type. Styles
+   use the format `fg=color,bg=color,style` where colors can be CSS hex (`#ff0000`), named colors
+   (`cyan`), or 256-color numbers (`123`). Styles include `bold`, `underline`, `italic`, etc.
+
+3. **Style Parser** (`src/terminal.ts`): `parseStyleString()` converts style strings to ANSI escape
+   sequences. Handles foreground/background colors and text decorations.
+
+**Important**: `tokenColors` in `syntax-highlight.ts` is built lazily on first use to ensure
+`initConfig()` has already processed `ZEEK_HIGHLIGHT_STYLES` overrides.
