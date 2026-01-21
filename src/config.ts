@@ -1,3 +1,5 @@
+import type { ZshTokenType } from './zsh-tokenizer/zsh-tokenizer.ts'
+
 export const Config = {
   menuRow: 2,
   lineEditOverMenu: false,
@@ -19,7 +21,7 @@ const COLOR_WHITE = '#ffffff'
 
 // Default syntax highlighting styles using Monokai colors
 // Values are style strings: "fg=#hexcolor" or zsh-syntax-highlighting format
-const DEFAULT_SYNTAX_HIGHLIGHT: Record<string, string> = {
+const DEFAULT_SYNTAX_HIGHLIGHT: Record<ZshTokenType, string> = {
   'unknown-token': `fg=${COLOR_FUCHSIA}`,
   'reserved-word': `fg=${COLOR_FUCHSIA}`,
   builtin: `fg=${COLOR_GREEN},underline`,
@@ -50,7 +52,7 @@ const DEFAULT_SYNTAX_HIGHLIGHT: Record<string, string> = {
 }
 
 // Mutable syntax highlight config that can be overridden
-export const SyntaxHighlight: Record<string, string> = { ...DEFAULT_SYNTAX_HIGHLIGHT }
+export const SyntaxHighlight: Record<ZshTokenType, string> = { ...DEFAULT_SYNTAX_HIGHLIGHT }
 
 export function initConfig(): boolean {
   // Build config from environment variables starting with ZEEK_
@@ -104,10 +106,10 @@ function applyConfig(configMap: Record<string, string>) {
  */
 function applyHighlightStyles(jsonString: string) {
   try {
-    const styles = JSON.parse(jsonString) as Record<string, string>
+    const styles = JSON.parse(jsonString)
     for (const [tokenType, style] of Object.entries(styles)) {
       if (typeof style === 'string' && style.length > 0) {
-        SyntaxHighlight[tokenType] = style
+        SyntaxHighlight[tokenType as ZshTokenType] = style
       }
     }
   } catch {

@@ -105,68 +105,65 @@ function parseColor(color: string, isBg: boolean): string {
  */
 export function parseStyleString(style: string): (s: string) => string {
   const parts = style.split(',').map(p => p.trim())
-  const sequences: string[] = []
-  const endSequences: string[] = []
+  const prefixes: string[] = []
+  const suffixes: string[] = []
 
   for (const part of parts) {
     if (part.startsWith('fg=')) {
       const color = part.slice(3)
       const seq = parseColor(color, false)
-      if (seq) sequences.push(seq)
+      if (seq) prefixes.push(seq)
     } else if (part.startsWith('bg=')) {
       const color = part.slice(3)
       const seq = parseColor(color, true)
-      if (seq) sequences.push(seq)
+      if (seq) prefixes.push(seq)
     } else {
       // Style modifiers
       switch (part.toLowerCase()) {
         case 'bold':
-          sequences.push('\x1b[1m')
-          endSequences.push('\x1b[22m')
+          prefixes.push('\x1b[1m')
+          suffixes.push('\x1b[22m')
           break
         case 'dim':
-          sequences.push('\x1b[2m')
-          endSequences.push('\x1b[22m')
+          prefixes.push('\x1b[2m')
+          suffixes.push('\x1b[22m')
           break
         case 'italic':
-          sequences.push('\x1b[3m')
-          endSequences.push('\x1b[23m')
+          prefixes.push('\x1b[3m')
+          suffixes.push('\x1b[23m')
           break
         case 'underline':
-          sequences.push('\x1b[4m')
-          endSequences.push('\x1b[24m')
+          prefixes.push('\x1b[4m')
+          suffixes.push('\x1b[24m')
           break
         case 'blink':
-          sequences.push('\x1b[5m')
-          endSequences.push('\x1b[25m')
+          prefixes.push('\x1b[5m')
+          suffixes.push('\x1b[25m')
           break
         case 'reverse':
         case 'standout':
-          sequences.push('\x1b[7m')
-          endSequences.push('\x1b[27m')
+          prefixes.push('\x1b[7m')
+          suffixes.push('\x1b[27m')
           break
         case 'hidden':
-          sequences.push('\x1b[8m')
-          endSequences.push('\x1b[28m')
+          prefixes.push('\x1b[8m')
+          suffixes.push('\x1b[28m')
           break
         case 'strikethrough':
-          sequences.push('\x1b[9m')
-          endSequences.push('\x1b[29m')
+          prefixes.push('\x1b[9m')
+          suffixes.push('\x1b[29m')
           break
         case 'none':
-          // Reset all - return identity function
-          return (s: string) => s
+          return reset
       }
     }
   }
-
-  if (sequences.length === 0) {
+  if (prefixes.length === 0) {
     return (s: string) => s
   }
-
-  const prefix = sequences.join('')
+  const prefix = prefixes.join('')
   // Only append end sequences for styles (not colors) - colors reset naturally
-  const suffix = endSequences.length > 0 ? endSequences.join('') : ''
+  const suffix = suffixes.length > 0 ? suffixes.join('') : ''
   return (s: string) => prefix + s + suffix
 }
 
