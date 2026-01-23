@@ -4,17 +4,12 @@ import os from 'node:os'
 
 function formatPermissions(mode: number, isDirectory: boolean): string {
   const fileType = isDirectory ? 'd' : '-'
-  const permissions = [
-    mode & 0o400 ? 'r' : '-',
-    mode & 0o200 ? 'w' : '-',
-    mode & 0o100 ? 'x' : '-',
-    mode & 0o040 ? 'r' : '-',
-    mode & 0o020 ? 'w' : '-',
-    mode & 0o010 ? 'x' : '-',
-    mode & 0o004 ? 'r' : '-',
-    mode & 0o002 ? 'w' : '-',
-    mode & 0o001 ? 'x' : '-'
-  ].join('')
+  const xwr = 'xwr'
+  let permissions = ''
+  for (let i = 8; i >= 0; i--) {
+    const bit = (mode >> i) & 1
+    permissions += bit ? xwr[i % 3] : '-'
+  }
   return fileType + permissions
 }
 
@@ -41,6 +36,7 @@ function formatTime(date: Date): string {
 export function getFileList(): string[] {
   const searchDir = process.cwd()
   const files = fs.readdirSync(searchDir)
+  // TODO: Replace with actual user info retrieval in a cross-platform way
   const username = os.userInfo().username
 
   return files.map(filename => {
