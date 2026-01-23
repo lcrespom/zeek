@@ -1,7 +1,7 @@
 import { getCommandHistory } from './cmd-history.ts'
 import { initConfig } from './config.ts'
 import { addCwdToHistory, getDirHistory } from './dir-history.ts'
-import { HistoryPopup } from './history-popup.ts'
+import { MenuPopup } from './menu-popup.ts'
 import { highlightCommand } from './syntax-highlight.ts'
 
 function getCommand() {
@@ -20,15 +20,15 @@ function main() {
       help()
       break
     case 'history':
-      const cmdPopup = new HistoryPopup(getCommandHistory(), highlightCommand)
-      cmdPopup.openHistoryPopup(process.argv[3], process.argv[4])
+      const cmdPopup = new MenuPopup(getCommandHistory(), highlightCommand)
+      cmdPopup.openMenuPopup(process.argv[3], process.argv[4])
       break
     case 'store-dir':
       addCwdToHistory()
       break
     case 'dir-history':
-      const dirPopup = new HistoryPopup(getDirHistory())
-      dirPopup.openHistoryPopup(process.argv[3], process.argv[4])
+      const dirPopup = new MenuPopup(getDirHistory())
+      dirPopup.openMenuPopup(process.argv[3], process.argv[4])
       break
     default:
       console.log(`Unknown command: ${command}`)

@@ -27,7 +27,7 @@ const SCROLL_FG_COLOR = '#ffffff'
 
 const NO_MATCHES = '# 🤷 No matches'
 
-export class HistoryPopup {
+export class MenuPopup {
   private items: string[] = []
   private filteredItems: string[] = []
   private menu: TableMenuInstance = {} as TableMenuInstance
@@ -41,7 +41,7 @@ export class HistoryPopup {
     if (lineHighlighter) this.lineHighlighter = lineHighlighter
   }
 
-  openHistoryPopup(lbuffer: string = '', rbuffer: string = '') {
+  openMenuPopup(lbuffer: string = '', rbuffer: string = '') {
     alternateScreen()
     clearScreen()
     moveCursor({ row: this.menuRow, col: 1 })
@@ -51,7 +51,7 @@ export class HistoryPopup {
     } catch (err) {
       normalScreen()
       showCursor()
-      console.error('Error showing history menu:', err)
+      console.error('Error showing popup menu:', err)
     }
   }
 
