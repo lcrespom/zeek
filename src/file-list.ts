@@ -51,7 +51,8 @@ const colFile = fgColorFunc(COLOR_GREEN)
 const colDir = fgColorFunc(COLOR_CYAN)
 
 export function highlightFileListLine(line: string): string {
-  // Example input: '-rw-r--r--  luis       3.2 K  18/01/2026 22:05  zeek.zsh'
+  // Example input: '-rw-r--r--  user       3.2 K  18/01/2026 22:05  zeek.zsh'
+  if (line.startsWith('#')) return line // Skip no matches line
   const permissions = colPermissions(line.slice(0, 10))
   const username = colUsername(line.slice(12, 20))
   const size = colSize(line.slice(22, 28))

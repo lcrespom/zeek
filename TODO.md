@@ -7,8 +7,9 @@
     - [x] Make palette configurable via ZEEK\_\* variables
     - [ ] memoize highlighted lines => just memoize `which`, when implemented
 - File completion
-  - [ ] Replicate nash look&feel
+  - [x] Replicate nash look&feel
   - [ ] Directory navigation
+  - [ ] Smart LBUFFER and RBUFFER handling
 - Misc
   - [x] Documentation
 - Bugs
