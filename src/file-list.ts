@@ -16,10 +16,10 @@ function formatPermissions(mode: number, isDirectory: boolean): string {
 }
 
 function formatSize(bytes: number): string {
-  if (bytes < 1024) return bytes.toString().padStart(4) + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1).padStart(4) + ' K'
-  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1).padStart(4) + ' M'
-  return (bytes / (1024 * 1024 * 1024)).toFixed(1).padStart(4) + ' G'
+  if (bytes < 1024) return bytes.toString().padStart(5) + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1).padStart(5) + ' K'
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1).padStart(5) + ' M'
+  return (bytes / (1024 * 1024 * 1024)).toFixed(1).padStart(5) + ' G'
 }
 
 function formatDate(date: Date): string {
@@ -55,10 +55,10 @@ export function highlightFileListLine(line: string): string {
   if (line.startsWith('#')) return line // Skip no matches line
   const permissions = colPermissions(line.slice(0, 10))
   const username = colUsername(line.slice(12, 20))
-  const size = colSize(line.slice(22, 28))
-  const date = colDate(line.slice(30, 40))
-  const time = colTime(line.slice(41, 46))
-  const filename = line.slice(48)
+  const size = colSize(line.slice(22, 29))
+  const date = colDate(line.slice(31, 41))
+  const time = colTime(line.slice(42, 47))
+  const filename = line.slice(49)
   const fileOrDir = line.startsWith('d') ? colDir(filename) : colFile(filename)
   return `${permissions}  ${username}  ${size}  ${date} ${time}  ${fileOrDir}`
 }
