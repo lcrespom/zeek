@@ -51,15 +51,15 @@ const colFile = fgColorFunc(COLOR_GREEN)
 const colDir = fgColorFunc(COLOR_CYAN)
 
 export function highlightFileListLine(line: string): string {
-  // Example input: '-rw-r--r--user     3.2 K18/01/202622:05zeek.zsh'
+  // Example input: '-rw-r--r--  luis       3.2 K  18/01/2026 22:05  zeek.zsh'
   const permissions = colPermissions(line.slice(0, 10))
-  const username = colUsername(line.slice(10, 18))
-  const size = colSize(line.slice(18, 24))
-  const date = colDate(line.slice(24, 34))
-  const time = colTime(line.slice(34, 39))
-  const filename = line.slice(39)
+  const username = colUsername(line.slice(12, 20))
+  const size = colSize(line.slice(22, 28))
+  const date = colDate(line.slice(30, 40))
+  const time = colTime(line.slice(41, 46))
+  const filename = line.slice(48)
   const fileOrDir = line.startsWith('d') ? colDir(filename) : colFile(filename)
-  return `${permissions}  ${username}  ${size}  ${date}  ${time}  ${fileOrDir}`
+  return `${permissions}  ${username}  ${size}  ${date} ${time}  ${fileOrDir}`
 }
 
 export function getFileList(): string[] {
@@ -74,6 +74,6 @@ export function getFileList(): string[] {
     const size = formatSize(stats.size)
     const date = formatDate(stats.mtime)
     const time = formatTime(stats.mtime)
-    return `${permissions}${username}${size}${date}${time}${filename}`
+    return `${permissions}  ${username}  ${size}  ${date} ${time}  ${filename} `
   })
 }
