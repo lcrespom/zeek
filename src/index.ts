@@ -30,7 +30,7 @@ function main() {
       addCwdToHistory()
       break
     case 'dir-history':
-      const dirPopup = new MenuPopup(getDirHistory().map(d => d + ' '))
+      const dirPopup = new MenuPopup(getDirHistory())
       dirPopup.openMenuPopup(lbuffer, rbuffer)
       break
     case 'file-search':
