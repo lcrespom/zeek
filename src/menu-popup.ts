@@ -27,15 +27,17 @@ const SCROLL_FG_COLOR = '#ffffff'
 
 const NO_MATCHES = '# 🤷 No matches'
 
+export type HighlightFunction = (line: string) => string
+
 export class MenuPopup {
   private items: string[] = []
   private filteredItems: string[] = []
   private menu: TableMenuInstance = {} as TableMenuInstance
-  private lineHighlighter: (line: string) => string = fgColorFunc(MENU_FG_COLOR)
+  private lineHighlighter: HighlightFunction = fgColorFunc(MENU_FG_COLOR)
   private menuRow: number = 3
   private lineEditorRow: number = 1
 
-  constructor(items: string[], lineHighlighter?: (line: string) => string) {
+  constructor(items: string[], lineHighlighter?: HighlightFunction) {
     this.items = items
     this.filteredItems = items
     if (lineHighlighter) this.lineHighlighter = lineHighlighter

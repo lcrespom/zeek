@@ -50,19 +50,30 @@ const colTime = fgColorFunc(COLOR_PURPLE)
 const colFile = fgColorFunc(COLOR_GREEN)
 const colDir = fgColorFunc(COLOR_CYAN)
 
+export function highlightFileListLine(line: string): string {
+  // Example input: '-rw-r--r--user     3.2 K18/01/202622:05zeek.zsh'
+  const permissions = colPermissions(line.slice(0, 10))
+  const username = colUsername(line.slice(10, 18))
+  const size = colSize(line.slice(18, 24))
+  const date = colDate(line.slice(24, 34))
+  const time = colTime(line.slice(34, 39))
+  const filename = line.slice(39)
+  const fileOrDir = line.startsWith('d') ? colDir(filename) : colFile(filename)
+  return `${permissions}  ${username}  ${size}  ${date}  ${time}  ${fileOrDir}`
+}
+
 export function getFileList(): string[] {
   const searchDir = process.cwd()
   const files = fs.readdirSync(searchDir)
   // TODO: Replace with actual user info retrieval in a cross-platform way
-  const username = colUsername(os.userInfo().username).padEnd(8)
+  const username = os.userInfo().username.padEnd(8)
   return files.map(filename => {
     const filePath = path.join(searchDir, filename)
     const stats = fs.statSync(filePath)
-    const permissions = colPermissions(formatPermissions(stats.mode, stats.isDirectory()))
-    const size = colSize(formatSize(stats.size))
-    const date = colDate(formatDate(stats.mtime))
-    const time = colTime(formatTime(stats.mtime))
-    const fileOrDir = stats.isDirectory() ? colDir(filename) : colFile(filename)
-    return `${permissions}  ${username}  ${size}  ${date} ${time}  ${fileOrDir}`
+    const permissions = formatPermissions(stats.mode, stats.isDirectory())
+    const size = formatSize(stats.size)
+    const date = formatDate(stats.mtime)
+    const time = formatTime(stats.mtime)
+    return `${permissions}${username}${size}${date}${time}${filename}`
   })
 }

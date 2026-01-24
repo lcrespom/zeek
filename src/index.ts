@@ -1,7 +1,7 @@
 import { getCommandHistory } from './cmd-history.ts'
 import { initConfig } from './config.ts'
 import { addCwdToHistory, getDirHistory } from './dir-history.ts'
-import { getFileList } from './file-list.ts'
+import { getFileList, highlightFileListLine } from './file-list.ts'
 import { MenuPopup } from './menu-popup.ts'
 import { highlightCommand } from './syntax-highlight.ts'
 
@@ -34,7 +34,7 @@ function main() {
       dirPopup.openMenuPopup(lbuffer, rbuffer)
       break
     case 'file-search':
-      const filePopup = new MenuPopup(getFileList())
+      const filePopup = new MenuPopup(getFileList(), highlightFileListLine)
       filePopup.openMenuPopup(lbuffer, rbuffer)
       break
     default:
