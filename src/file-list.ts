@@ -63,6 +63,10 @@ export function highlightFileListLine(line: string): string {
   return `${permissions}  ${username}  ${size}  ${date} ${time}  ${fileOrDir}`
 }
 
+export function getFileNameFromLine(line: string): string {
+  return line.slice(49).trim()
+}
+
 export function getFileList(): string[] {
   const searchDir = process.cwd()
   const files = fs.readdirSync(searchDir)

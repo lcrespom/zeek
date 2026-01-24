@@ -28,6 +28,7 @@ const SCROLL_FG_COLOR = '#ffffff'
 const NO_MATCHES = '# 🤷 No matches'
 
 export type HighlightFunction = (line: string) => string
+export type SelectionHandler = (item: number, line?: string) => void
 
 export class MenuPopup {
   private items: string[] = []
@@ -36,6 +37,7 @@ export class MenuPopup {
   private lineHighlighter: HighlightFunction = fgColorFunc(MENU_FG_COLOR)
   private menuRow: number = 3
   private lineEditorRow: number = 1
+  private selectionHandler: SelectionHandler = () => {}
 
   constructor(items: string[], lineHighlighter?: HighlightFunction) {
     this.items = items
@@ -55,6 +57,10 @@ export class MenuPopup {
       showCursor()
       console.error('Error showing popup menu:', err)
     }
+  }
+
+  handleSelection(selectionHandler: SelectionHandler) {
+    this.selectionHandler = selectionHandler
   }
 
   private computeDimensions() {
@@ -87,10 +93,7 @@ export class MenuPopup {
       scrollBarCol: width + 1,
       selection: this.items.length - 1,
       colors: this.getColors(width),
-      done: (item: number) => {
-        const line = item >= 0 ? this.filteredItems[item] : undefined
-        this.menuDone(line)
-      }
+      done: (item: number) => this.menuDone(item)
     })
   }
 
@@ -147,14 +150,12 @@ export class MenuPopup {
     return items.filter(item => this.multiMatch(item.toLowerCase(), words))
   }
 
-  private menuDone(line?: string) {
+  private menuDone(item: number) {
+    let line = item >= 0 ? this.filteredItems[item] : undefined
+    if (line === NO_MATCHES) line = undefined
+    else if (line) line = line.replaceAll(GRAPHIC_NEWLINE, '\n')
     normalScreen()
     showCursor()
-    if (line && line !== NO_MATCHES) {
-      const fd3 = fs.openSync('/dev/fd/3', 'w')
-      fs.writeSync(fd3, line.replaceAll(GRAPHIC_NEWLINE, '\n'))
-      fs.closeSync(fd3)
-    }
-    process.exit(0)
+    this.selectionHandler(item, line)
   }
 }
