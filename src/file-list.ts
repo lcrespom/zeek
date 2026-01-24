@@ -14,10 +14,10 @@ function formatPermissions(mode: number, isDirectory: boolean): string {
 }
 
 function formatSize(bytes: number): string {
-  if (bytes < 1024) return bytes.toString().padStart(5)
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1).padStart(4) + 'K'
-  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1).padStart(4) + 'M'
-  return (bytes / (1024 * 1024 * 1024)).toFixed(1).padStart(4) + 'G'
+  if (bytes < 1024) return bytes.toString().padStart(4) + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1).padStart(4) + ' K'
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1).padStart(4) + ' M'
+  return (bytes / (1024 * 1024 * 1024)).toFixed(1).padStart(4) + ' G'
 }
 
 function formatDate(date: Date): string {
@@ -37,7 +37,7 @@ export function getFileList(): string[] {
   const searchDir = process.cwd()
   const files = fs.readdirSync(searchDir)
   // TODO: Replace with actual user info retrieval in a cross-platform way
-  const username = os.userInfo().username
+  const username = os.userInfo().username.padEnd(8)
 
   return files.map(filename => {
     const filePath = path.join(searchDir, filename)
