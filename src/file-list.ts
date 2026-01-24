@@ -2,6 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
 
+import { fgColorFunc } from './terminal.ts'
+
 function formatPermissions(mode: number, isDirectory: boolean): string {
   const fileType = isDirectory ? 'd' : '-'
   const xwr = 'xwr'
@@ -33,19 +35,34 @@ function formatTime(date: Date): string {
   return `${hours}:${minutes}`
 }
 
+// TODO make colors configurable
+const COLOR_GREEN = '#a6e22e'
+const COLOR_FUCHSIA = '#f92672'
+const COLOR_CYAN = '#66d9ef'
+const COLOR_ORANGE = '#fd971f'
+const COLOR_PURPLE = '#ae81ff'
+
+const colPermissions = fgColorFunc(COLOR_FUCHSIA)
+const colUsername = fgColorFunc(COLOR_GREEN)
+const colSize = fgColorFunc(COLOR_ORANGE)
+const colDate = fgColorFunc(COLOR_PURPLE)
+const colTime = fgColorFunc(COLOR_PURPLE)
+const colFile = fgColorFunc(COLOR_GREEN)
+const colDir = fgColorFunc(COLOR_CYAN)
+
 export function getFileList(): string[] {
   const searchDir = process.cwd()
   const files = fs.readdirSync(searchDir)
   // TODO: Replace with actual user info retrieval in a cross-platform way
-  const username = os.userInfo().username.padEnd(8)
-
+  const username = colUsername(os.userInfo().username).padEnd(8)
   return files.map(filename => {
     const filePath = path.join(searchDir, filename)
     const stats = fs.statSync(filePath)
-    const permissions = formatPermissions(stats.mode, stats.isDirectory())
-    const size = formatSize(stats.size)
-    const date = formatDate(stats.mtime)
-    const time = formatTime(stats.mtime)
-    return `${permissions}  ${username}  ${size}  ${date} ${time}  ${filename}`
+    const permissions = colPermissions(formatPermissions(stats.mode, stats.isDirectory()))
+    const size = colSize(formatSize(stats.size))
+    const date = colDate(formatDate(stats.mtime))
+    const time = colTime(formatTime(stats.mtime))
+    const fileOrDir = stats.isDirectory() ? colDir(filename) : colFile(filename)
+    return `${permissions}  ${username}  ${size}  ${date} ${time}  ${fileOrDir}`
   })
 }
