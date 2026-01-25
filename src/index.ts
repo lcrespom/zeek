@@ -22,7 +22,7 @@ function help() {
   console.log('This tool should only be called via the "zeek.zsh" script.')
 }
 
-function emitLineAndExit(_item: number, line?: string) {
+function emitLineAndExit(line?: string) {
   if (line) {
     const fd3 = fs.openSync('/dev/fd/3', 'w')
     fs.writeSync(fd3, line)
@@ -48,7 +48,8 @@ function openFileSearchPopup(lbuffer: string, rbuffer: string) {
   const { dir, file } = splitPathAndFile(word)
   const resolvedDir = resolveDir(dir)
   const popup = new MenuPopup(getFileList(resolvedDir), highlightFileListLine)
-  popup.handleSelection = (item, line) => {
+  //TODO filter should be applied here based on 'file' variable
+  popup.handleSelection = line => {
     if (line) {
       const selectedFile = getFileNameFromLine(line)
       // Emit: new_lbuffer + tab + new_rbuffer
@@ -56,7 +57,7 @@ function openFileSearchPopup(lbuffer: string, rbuffer: string) {
       const newLbuffer = lbuffer.slice(0, wordStart) + dir + selectedFile
       line = newLbuffer + '\t' + suffix
     }
-    emitLineAndExit(item, line)
+    emitLineAndExit(line)
   }
   popup.openMenuPopup(file, '')
 }

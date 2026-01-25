@@ -56,7 +56,7 @@ export class MenuPopup {
     }
   }
 
-  handleSelection(item: number, line?: string) {}
+  handleSelection(line?: string) {}
 
   private computeDimensions() {
     // Compute menu width and height based on terminal size and config
@@ -151,6 +151,6 @@ export class MenuPopup {
     else if (line) line = line.replaceAll(GRAPHIC_NEWLINE, '\n')
     normalScreen()
     showCursor()
-    this.handleSelection(item, line)
+    this.handleSelection(line)
   }
 }
