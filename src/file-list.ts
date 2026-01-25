@@ -1,8 +1,24 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import os from 'node:os'
+import userid from 'userid'
 
 import { fgColorFunc } from './terminal.ts'
+
+// Cache UID -> username lookups for performance
+const uidCache = new Map<number, string>()
+
+function getUsername(uid: number): string {
+  const cached = uidCache.get(uid)
+  if (cached !== undefined) return cached
+  let username: string
+  try {
+    username = userid.username(uid)
+  } catch {
+    username = uid.toString()
+  }
+  uidCache.set(uid, username)
+  return username
+}
 
 function formatPermissions(mode: number, isDirectory: boolean): string {
   const fileType = isDirectory ? 'd' : '-'
@@ -69,14 +85,13 @@ export function getFileNameFromLine(line: string): string {
 
 export function getFileList(searchDir: string = process.cwd()): string[] {
   const files = fs.readdirSync(searchDir)
-  // TODO: Replace with actual user info retrieval in a cross-platform way
-  const username = os.userInfo().username.padEnd(8)
   const result: string[] = []
   for (const filename of files) {
     try {
       const filePath = path.join(searchDir, filename)
       const stats = fs.statSync(filePath)
       const permissions = formatPermissions(stats.mode, stats.isDirectory())
+      const username = getUsername(stats.uid).padEnd(8)
       const size = formatSize(stats.size)
       const date = formatDate(stats.mtime)
       const time = formatTime(stats.mtime)
