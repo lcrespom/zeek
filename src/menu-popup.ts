@@ -27,6 +27,7 @@ const SCROLL_FG_COLOR = '#ffffff'
 const NO_MATCHES = '# 🤷 No matches'
 
 export type HighlightFunction = (line: string) => string
+export type FilterTextFunction = (line: string) => string
 
 export type SelectionAction = 'select' | 'navigate' | 'navigate-up'
 
@@ -64,6 +65,10 @@ export class MenuPopup {
   // Called when Tab or Backspace navigation is triggered
   // Return new items to update the menu, or undefined to close the popup
   onNavigate?: (line: string | undefined, action: SelectionAction) => string[] | undefined
+
+  // Optional function to extract the text to filter on from each item
+  // By default, filters on the entire item
+  getFilterText?: FilterTextFunction
 
   // Update menu items and clear filter
   setItems(items: string[]) {
@@ -202,7 +207,10 @@ export class MenuPopup {
 
   private filterItems(items: string[], filter: string): string[] {
     const words = filter.toLowerCase().split(' ')
-    return items.filter(item => this.multiMatch(item.toLowerCase(), words))
+    return items.filter(item => {
+      const text = this.getFilterText ? this.getFilterText(item) : item
+      return this.multiMatch(text.toLowerCase(), words)
+    })
   }
 
   private menuDone(item: number, action: SelectionAction = 'select') {

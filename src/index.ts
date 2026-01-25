@@ -53,6 +53,9 @@ function openFileSearchPopup(lbuffer: string, rbuffer: string) {
 
   const popup = new MenuPopup(getFileList(currentAbsPath), highlightFileListLine)
 
+  // Filter only by filename, not the full line with permissions/size/date
+  popup.getFilterText = getFileNameFromLine
+
   // Handle Tab/Backspace navigation
   popup.onNavigate = (line, action) => {
     if (action === 'navigate' && line) {
