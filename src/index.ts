@@ -33,13 +33,13 @@ function emitLineAndExit(_item: number, line?: string) {
 
 function openHistoryPopup(lbuffer: string, rbuffer: string) {
   const popup = new MenuPopup(getCommandHistory(), highlightCommand)
-  popup.handleSelection(emitLineAndExit)
+  popup.handleSelection = emitLineAndExit
   popup.openMenuPopup(lbuffer, rbuffer)
 }
 
 function openDirHistoryPopup(lbuffer: string, rbuffer: string) {
   const popup = new MenuPopup(getDirHistory())
-  popup.handleSelection(emitLineAndExit)
+  popup.handleSelection = emitLineAndExit
   popup.openMenuPopup(lbuffer, rbuffer)
 }
 
@@ -48,7 +48,7 @@ function openFileSearchPopup(lbuffer: string, rbuffer: string) {
   const { dir, file } = splitPathAndFile(word)
   const resolvedDir = resolveDir(dir)
   const popup = new MenuPopup(getFileList(resolvedDir), highlightFileListLine)
-  popup.handleSelection((item, line) => {
+  popup.handleSelection = (item, line) => {
     if (line) {
       const selectedFile = getFileNameFromLine(line)
       // Emit: new_lbuffer + tab + new_rbuffer
@@ -57,7 +57,7 @@ function openFileSearchPopup(lbuffer: string, rbuffer: string) {
       line = newLbuffer + '\t' + suffix
     }
     emitLineAndExit(item, line)
-  })
+  }
   popup.openMenuPopup(file, '')
 }
 

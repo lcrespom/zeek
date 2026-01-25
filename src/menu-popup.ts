@@ -27,7 +27,6 @@ const SCROLL_FG_COLOR = '#ffffff'
 const NO_MATCHES = '# 🤷 No matches'
 
 export type HighlightFunction = (line: string) => string
-export type SelectionHandler = (item: number, line?: string) => void
 
 export class MenuPopup {
   private items: string[] = []
@@ -36,7 +35,6 @@ export class MenuPopup {
   private lineHighlighter: HighlightFunction = fgColorFunc(MENU_FG_COLOR)
   private menuRow: number = 3
   private lineEditorRow: number = 1
-  private selectionHandler: SelectionHandler = () => {}
 
   constructor(items: string[], lineHighlighter?: HighlightFunction) {
     this.items = items
@@ -58,9 +56,7 @@ export class MenuPopup {
     }
   }
 
-  handleSelection(selectionHandler: SelectionHandler) {
-    this.selectionHandler = selectionHandler
-  }
+  handleSelection(item: number, line?: string) {}
 
   private computeDimensions() {
     // Compute menu width and height based on terminal size and config
@@ -155,6 +151,6 @@ export class MenuPopup {
     else if (line) line = line.replaceAll(GRAPHIC_NEWLINE, '\n')
     normalScreen()
     showCursor()
-    this.selectionHandler(item, line)
+    this.handleSelection(item, line)
   }
 }
