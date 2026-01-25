@@ -28,6 +28,8 @@ const NO_MATCHES = '# 🤷 No matches'
 
 export type HighlightFunction = (line: string) => string
 
+export type SelectionAction = 'select' | 'navigate' | 'navigate-up'
+
 export class MenuPopup {
   private items: string[] = []
   private filteredItems: string[] = []
@@ -35,6 +37,7 @@ export class MenuPopup {
   private lineHighlighter: HighlightFunction = fgColorFunc(MENU_FG_COLOR)
   private menuRow: number = 3
   private lineEditorRow: number = 1
+  private lineEditor: LineEditor | null = null
 
   constructor(items: string[], lineHighlighter?: HighlightFunction) {
     this.items = items
@@ -56,7 +59,23 @@ export class MenuPopup {
     }
   }
 
-  handleSelection(line?: string) {}
+  handleSelection(line?: string, action?: SelectionAction) {}
+
+  // Called when Tab or Backspace navigation is triggered
+  // Return new items to update the menu, or undefined to close the popup
+  onNavigate?: (line: string | undefined, action: SelectionAction) => string[] | undefined
+
+  // Update menu items and clear filter
+  setItems(items: string[]) {
+    this.items = items
+    this.filteredItems = items
+    if (this.lineEditor) {
+      this.lineEditor.setLine('')
+      this.lineEditor.showLine()
+    }
+    moveCursor({ row: this.menuRow, col: 1 })
+    this.menu.update({ items: this.filteredItems, selection: this.filteredItems.length - 1 })
+  }
 
   private computeDimensions() {
     // Compute menu width and height based on terminal size and config
@@ -115,22 +134,52 @@ export class MenuPopup {
     process.stdin.setRawMode(true)
     process.stdin.resume()
     keypress(process.stdin)
-    const lineEditor = new LineEditor(lbuffer, this.lineEditorRow)
+    this.lineEditor = new LineEditor(lbuffer, this.lineEditorRow)
     if (lbuffer || rbuffer) {
-      this.updateMenu(lineEditor.getLine())
-      lineEditor.showLine()
+      this.updateMenu(this.lineEditor.getLine())
+      this.lineEditor.showLine()
     }
     process.stdin.on('keypress', async (ch, key) => {
+      if (!this.lineEditor) return
       hideCursor()
-      if (lineEditor.isLineEditKey(ch, key)) {
-        lineEditor.editLine(ch, key)
-        this.updateMenu(lineEditor.getLine())
-        if (!Config.lineEditOverMenu) lineEditor.showLine()
+      // Tab key: navigate into directory
+      if (key && key.name === 'tab') {
+        const line = this.filteredItems[this.menu.selection]
+        if (this.onNavigate) {
+          const newItems = this.onNavigate(line, 'navigate')
+          if (newItems) {
+            this.setItems(newItems)
+            moveCursor(this.lineEditor.getCursorPosition())
+            showCursor()
+            return
+          }
+        }
+        this.menuDone(this.menu.selection, 'navigate')
+        return
+      }
+      // Backspace on empty filter: navigate to parent directory
+      if (this.lineEditor.isBackspace(ch) && this.lineEditor.getLine() === '') {
+        if (this.onNavigate) {
+          const newItems = this.onNavigate(undefined, 'navigate-up')
+          if (newItems) {
+            this.setItems(newItems)
+            moveCursor(this.lineEditor.getCursorPosition())
+            showCursor()
+            return
+          }
+        }
+        this.menuDone(-1, 'navigate-up')
+        return
+      }
+      if (this.lineEditor.isLineEditKey(ch, key)) {
+        this.lineEditor.editLine(ch, key)
+        this.updateMenu(this.lineEditor.getLine())
+        if (!Config.lineEditOverMenu) this.lineEditor.showLine()
       } else {
         moveCursor({ row: this.menuRow, col: 1 })
         this.menu.keyHandler(ch, key)
       }
-      moveCursor(lineEditor.getCursorPosition())
+      moveCursor(this.lineEditor.getCursorPosition())
       showCursor()
     })
   }
@@ -145,12 +194,12 @@ export class MenuPopup {
     return items.filter(item => this.multiMatch(item.toLowerCase(), words))
   }
 
-  private menuDone(item: number) {
+  private menuDone(item: number, action: SelectionAction = 'select') {
     let line = item >= 0 ? this.filteredItems[item] : undefined
     if (line === NO_MATCHES) line = undefined
     else if (line) line = line.replaceAll(GRAPHIC_NEWLINE, '\n')
     normalScreen()
     showCursor()
-    this.handleSelection(line)
+    this.handleSelection(line, action)
   }
 }
