@@ -1,9 +1,9 @@
 // @ts-expect-error - CommonJS module without types
 import keypress from 'keypress'
-import './table-menu.d.ts'
 import { tableMenu } from 'node-terminal-menu'
 import type { TableMenuInstance } from 'node-terminal-menu'
 
+import './table-menu.d.ts'
 import { LineEditor } from './line-editor.ts'
 import {
   alternateScreen,
@@ -69,12 +69,23 @@ export class MenuPopup {
   setItems(items: string[]) {
     this.items = items
     this.filteredItems = items
+    const { width, height } = this.computeDimensions()
+    clearScreen()
     if (this.lineEditor) {
       this.lineEditor.setLine('')
+      this.lineEditor.setRow(this.lineEditorRow)
       this.lineEditor.showLine()
     }
     moveCursor({ row: this.menuRow, col: 1 })
-    this.menu.update({ items: this.filteredItems, selection: this.filteredItems.length - 1 })
+    this.menu.update({
+      items: this.filteredItems,
+      selection: this.filteredItems.length - 1,
+      height,
+      initialHeight: height,
+      columnWidth: width,
+      scrollBarCol: width + 1,
+      colors: this.getColors(width)
+    })
   }
 
   private computeDimensions() {

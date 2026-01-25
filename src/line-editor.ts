@@ -136,6 +136,10 @@ export class LineEditor {
     this.right = ''
   }
 
+  setRow(row: number) {
+    this.row = row
+  }
+
   getCursorPosition(): CursorPosition {
     return { row: this.row, col: this.left.length + 1 }
   }
