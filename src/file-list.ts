@@ -67,18 +67,83 @@ export function getFileNameFromLine(line: string): string {
   return line.slice(49).trim()
 }
 
-export function getFileList(): string[] {
-  const searchDir = process.cwd()
+export function getFileList(searchDir: string = process.cwd()): string[] {
   const files = fs.readdirSync(searchDir)
   // TODO: Replace with actual user info retrieval in a cross-platform way
   const username = os.userInfo().username.padEnd(8)
-  return files.map(filename => {
-    const filePath = path.join(searchDir, filename)
-    const stats = fs.statSync(filePath)
-    const permissions = formatPermissions(stats.mode, stats.isDirectory())
-    const size = formatSize(stats.size)
-    const date = formatDate(stats.mtime)
-    const time = formatTime(stats.mtime)
-    return `${permissions}  ${username}  ${size}  ${date} ${time}  ${filename} `
-  })
+  const result: string[] = []
+  for (const filename of files) {
+    try {
+      const filePath = path.join(searchDir, filename)
+      const stats = fs.statSync(filePath)
+      const permissions = formatPermissions(stats.mode, stats.isDirectory())
+      const size = formatSize(stats.size)
+      const date = formatDate(stats.mtime)
+      const time = formatTime(stats.mtime)
+      result.push(`${permissions}  ${username}  ${size}  ${date} ${time}  ${filename} `)
+    } catch {
+      // Skip files that can't be stat'd (broken symlinks, permission issues, etc.)
+    }
+  }
+  return result
+}
+
+/**
+ * Extract the word under the cursor from lbuffer and rbuffer.
+ * The word is the text from the last unquoted space in lbuffer to the first unquoted space in rbuffer.
+ */
+export function getWordUnderCursor(
+  lbuffer: string,
+  rbuffer: string
+): { word: string; wordStart: number } {
+  // Find the start of the word (last space in lbuffer, or start of lbuffer)
+  let wordStart = lbuffer.length
+  for (let i = lbuffer.length - 1; i >= 0; i--) {
+    if (lbuffer[i] === ' ' || lbuffer[i] === '\t') {
+      wordStart = i + 1
+      break
+    }
+    if (i === 0) wordStart = 0
+  }
+  const leftPart = lbuffer.slice(wordStart)
+  // Find the end of the word (first space in rbuffer, or end of rbuffer)
+  let wordEnd = rbuffer.length
+  for (let i = 0; i < rbuffer.length; i++) {
+    if (rbuffer[i] === ' ' || rbuffer[i] === '\t') {
+      wordEnd = i
+      break
+    }
+  }
+  const rightPart = rbuffer.slice(0, wordEnd)
+  return { word: leftPart + rightPart, wordStart }
+}
+
+/**
+ * Split a path/file word into directory and filename parts.
+ * Examples:
+ *   "src/index" -> { dir: "src/", file: "index" }
+ *   "/usr/local/b" -> { dir: "/usr/local/", file: "b" }
+ *   "foo" -> { dir: "", file: "foo" }
+ *   "src/" -> { dir: "src/", file: "" }
+ */
+export function splitPathAndFile(word: string): { dir: string; file: string } {
+  // Trailing slash means directory only, no file filter
+  if (word.endsWith('/')) return { dir: word, file: '' }
+  const parsed = path.parse(word)
+  // Add trailing slash if dir exists and doesn't already have one (e.g., root '/')
+  const dir = parsed.dir ? (parsed.dir.endsWith('/') ? parsed.dir : parsed.dir + '/') : ''
+  return { dir, file: parsed.base }
+}
+
+/**
+ * Resolve a directory path, handling ~, relative paths, etc.
+ */
+export function resolveDir(dir: string): string {
+  if (!dir) return process.cwd()
+  // Handle home directory
+  if (dir.startsWith('~/')) {
+    dir = path.join(process.env.HOME || '', dir.slice(2))
+  }
+  // Resolve relative to cwd
+  return path.resolve(process.cwd(), dir)
 }

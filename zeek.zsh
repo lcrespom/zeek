@@ -47,11 +47,12 @@ function history_popup() {
     fi
 }
 
-# Open Zeek popup in the file search page (not implemented yet)
+# Open Zeek file search popup
 function file_search_popup() {
-    local search_out=$(zeek file-search "$LBUFFER" "$PWD")
+    local search_out=$(zeek file-search "$LBUFFER" "$RBUFFER")
     if [[ -n "$search_out" ]]; then
       LBUFFER=$search_out
+      RBUFFER=""
     fi
 }
 

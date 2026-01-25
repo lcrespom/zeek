@@ -3,7 +3,14 @@ import fs from 'node:fs'
 import { getCommandHistory } from './cmd-history.ts'
 import { initConfig } from './config.ts'
 import { addCwdToHistory, getDirHistory } from './dir-history.ts'
-import { getFileList, getFileNameFromLine, highlightFileListLine } from './file-list.ts'
+import {
+  getFileList,
+  getFileNameFromLine,
+  getWordUnderCursor,
+  highlightFileListLine,
+  resolveDir,
+  splitPathAndFile
+} from './file-list.ts'
 import { MenuPopup } from './menu-popup.ts'
 import { highlightCommand } from './syntax-highlight.ts'
 
@@ -37,12 +44,20 @@ function openDirHistoryPopup(lbuffer: string, rbuffer: string) {
 }
 
 function openFileSearchPopup(lbuffer: string, rbuffer: string) {
-  const popup = new MenuPopup(getFileList(), highlightFileListLine)
+  const { word, wordStart } = getWordUnderCursor(lbuffer, rbuffer)
+  const { dir, file } = splitPathAndFile(word)
+  const resolvedDir = resolveDir(dir)
+  const popup = new MenuPopup(getFileList(resolvedDir), highlightFileListLine)
   popup.handleSelection((item, line) => {
-    if (line) line = getFileNameFromLine(line)
+    if (line) {
+      const selectedFile = getFileNameFromLine(line)
+      // Emit: everything before the word + dir + selected file
+      const prefix = lbuffer.slice(0, wordStart)
+      line = prefix + dir + selectedFile
+    }
     emitLineAndExit(item, line)
   })
-  popup.openMenuPopup(lbuffer, rbuffer)
+  popup.openMenuPopup(file, '')
 }
 
 function main() {
