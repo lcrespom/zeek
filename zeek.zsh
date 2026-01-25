@@ -51,8 +51,10 @@ function history_popup() {
 function file_search_popup() {
     local search_out=$(zeek file-search "$LBUFFER" "$RBUFFER")
     if [[ -n "$search_out" ]]; then
-      LBUFFER=$search_out
-      RBUFFER=""
+      # Output format: new_lbuffer\tnew_rbuffer (tab-separated)
+      LBUFFER="${search_out%%$'\t'*}"
+      RBUFFER="${search_out#*$'\t'}"
+      [[ "$RBUFFER" == "$search_out" ]] && RBUFFER=""
     fi
 }
 

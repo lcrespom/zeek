@@ -44,16 +44,17 @@ function openDirHistoryPopup(lbuffer: string, rbuffer: string) {
 }
 
 function openFileSearchPopup(lbuffer: string, rbuffer: string) {
-  const { word, wordStart } = getWordUnderCursor(lbuffer, rbuffer)
+  const { word, wordStart, suffix } = getWordUnderCursor(lbuffer, rbuffer)
   const { dir, file } = splitPathAndFile(word)
   const resolvedDir = resolveDir(dir)
   const popup = new MenuPopup(getFileList(resolvedDir), highlightFileListLine)
   popup.handleSelection((item, line) => {
     if (line) {
       const selectedFile = getFileNameFromLine(line)
-      // Emit: everything before the word + dir + selected file
-      const prefix = lbuffer.slice(0, wordStart)
-      line = prefix + dir + selectedFile
+      // Emit: new_lbuffer + tab + new_rbuffer
+      // This allows zsh to set LBUFFER and RBUFFER separately for correct cursor position
+      const newLbuffer = lbuffer.slice(0, wordStart) + dir + selectedFile
+      line = newLbuffer + '\t' + suffix
     }
     emitLineAndExit(item, line)
   })

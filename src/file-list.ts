@@ -91,11 +91,12 @@ export function getFileList(searchDir: string = process.cwd()): string[] {
 /**
  * Extract the word under the cursor from lbuffer and rbuffer.
  * The word is the text from the last unquoted space in lbuffer to the first unquoted space in rbuffer.
+ * Also returns the suffix (part of rbuffer after the word) to preserve text after the cursor.
  */
 export function getWordUnderCursor(
   lbuffer: string,
   rbuffer: string
-): { word: string; wordStart: number } {
+): { word: string; wordStart: number; suffix: string } {
   // Find the start of the word (last space in lbuffer, or start of lbuffer)
   let wordStart = lbuffer.length
   for (let i = lbuffer.length - 1; i >= 0; i--) {
@@ -115,7 +116,8 @@ export function getWordUnderCursor(
     }
   }
   const rightPart = rbuffer.slice(0, wordEnd)
-  return { word: leftPart + rightPart, wordStart }
+  const suffix = rbuffer.slice(wordEnd)
+  return { word: leftPart + rightPart, wordStart, suffix }
 }
 
 /**
