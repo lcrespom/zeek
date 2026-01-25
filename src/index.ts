@@ -24,6 +24,27 @@ function emitLineAndExit(_item: number, line?: string) {
   process.exit(0)
 }
 
+function openHistoryPopup(lbuffer: string, rbuffer: string) {
+  const popup = new MenuPopup(getCommandHistory(), highlightCommand)
+  popup.handleSelection(emitLineAndExit)
+  popup.openMenuPopup(lbuffer, rbuffer)
+}
+
+function openDirHistoryPopup(lbuffer: string, rbuffer: string) {
+  const popup = new MenuPopup(getDirHistory())
+  popup.handleSelection(emitLineAndExit)
+  popup.openMenuPopup(lbuffer, rbuffer)
+}
+
+function openFileSearchPopup(lbuffer: string, rbuffer: string) {
+  const popup = new MenuPopup(getFileList(), highlightFileListLine)
+  popup.handleSelection((item, line) => {
+    if (line) line = getFileNameFromLine(line)
+    emitLineAndExit(item, line)
+  })
+  popup.openMenuPopup(lbuffer, rbuffer)
+}
+
 function main() {
   const command = getCommand()
   const lbuffer = process.argv[3]
@@ -34,25 +55,16 @@ function main() {
       help()
       break
     case 'history':
-      const cmdPopup = new MenuPopup(getCommandHistory(), highlightCommand)
-      cmdPopup.handleSelection(emitLineAndExit)
-      cmdPopup.openMenuPopup(lbuffer, rbuffer)
+      openHistoryPopup(lbuffer, rbuffer)
       break
     case 'store-dir':
       addCwdToHistory()
       break
     case 'dir-history':
-      const dirPopup = new MenuPopup(getDirHistory())
-      dirPopup.handleSelection(emitLineAndExit)
-      dirPopup.openMenuPopup(lbuffer, rbuffer)
+      openDirHistoryPopup(lbuffer, rbuffer)
       break
     case 'file-search':
-      const filePopup = new MenuPopup(getFileList(), highlightFileListLine)
-      filePopup.handleSelection((item, line) => {
-        if (line) line = getFileNameFromLine(line)
-        emitLineAndExit(item, line)
-      })
-      filePopup.openMenuPopup(lbuffer, rbuffer)
+      openFileSearchPopup(lbuffer, rbuffer)
       break
     default:
       console.log(`Unknown command: ${command}`)
