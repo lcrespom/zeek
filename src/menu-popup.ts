@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 // @ts-expect-error - CommonJS module without types
 import keypress from 'keypress'
 import './table-menu.d.ts'
