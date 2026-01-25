@@ -91,8 +91,11 @@ function openFileSearchPopup(lbuffer: string, rbuffer: string) {
         return
       }
       // Convert absolute path back to relative for output
-      const relativePath = path.relative(process.cwd(), currentAbsPath)
-      const prefix = relativePath ? relativePath + '/' : ''
+      let relativePath = path.relative(process.cwd(), currentAbsPath)
+      // But use absolute path if outside cwd
+      if (relativePath.startsWith('..')) relativePath = currentAbsPath
+      let prefix = relativePath ? relativePath + '/' : ''
+      if (relativePath === '/') prefix = '/'
       const newLbuffer = lbuffer.slice(0, wordStart) + prefix + selectedFile
       line = newLbuffer + '\t' + suffix
     }
