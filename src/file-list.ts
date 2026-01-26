@@ -109,7 +109,8 @@ export function getFileList(searchDir: string = process.cwd()): string[] {
     const entry = formatFileEntry(path.join(searchDir, filename), filename)
     if (entry) result.push(entry)
   }
-  return result
+  // Sort directories first, then files
+  return result.sort((a, b) => b.charCodeAt(0) - a.charCodeAt(0))
 }
 
 /**
