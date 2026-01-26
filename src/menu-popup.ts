@@ -40,6 +40,9 @@ export class MenuPopup {
   private lineEditorRow: number = 1
   private lineEditor: LineEditor | null = null
 
+  // Optional header text shown above the menu
+  headerText?: string
+
   constructor(items: string[], lineHighlighter?: HighlightFunction) {
     this.items = items
     this.filteredItems = items
@@ -49,15 +52,22 @@ export class MenuPopup {
   openMenuPopup(lbuffer: string = '', rbuffer: string = '') {
     alternateScreen()
     clearScreen()
-    moveCursor({ row: this.menuRow, col: 1 })
     try {
       this.menu = this.createMenu()
+      this.showHeader()
       this.listenKeyboard(lbuffer, rbuffer)
     } catch (err) {
       normalScreen()
       showCursor()
       console.error('Error showing popup menu:', err)
     }
+  }
+
+  private showHeader() {
+    if (!this.headerText) return
+    const headerRow = this.menuRow - 1
+    moveCursor({ row: headerRow, col: 1 })
+    process.stdout.write(fgColorFunc(MENU_FG_COLOR)(this.headerText))
   }
 
   handleSelection(line?: string, action?: SelectionAction) {}
@@ -71,11 +81,13 @@ export class MenuPopup {
   getFilterText?: FilterTextFunction
 
   // Update menu items and clear filter
-  setItems(items: string[]) {
+  setItems(items: string[], headerText?: string) {
     this.items = items
     this.filteredItems = items
+    if (headerText !== undefined) this.headerText = headerText
     const { width, height } = this.computeDimensions()
     clearScreen()
+    this.showHeader()
     if (this.lineEditor) {
       this.lineEditor.setLine('')
       this.lineEditor.setRow(this.lineEditorRow)

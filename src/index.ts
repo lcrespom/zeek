@@ -47,12 +47,11 @@ function openDirHistoryPopup(lbuffer: string, rbuffer: string) {
 function openFileSearchPopup(lbuffer: string, rbuffer: string) {
   const { word, wordStart, suffix } = getWordUnderCursor(lbuffer, rbuffer)
   const { dir, file } = splitPathAndFile(word)
-
   // Track current directory as absolute path (simpler navigation logic)
   let currentAbsPath = resolveDir(dir)
-
   const popup = new MenuPopup(getFileList(currentAbsPath), highlightFileListLine)
-
+  // Show current path above the menu
+  popup.headerText = currentAbsPath
   // Filter only by filename, not the full line with permissions/size/date
   popup.getFilterText = getFileNameFromLine
 
@@ -65,6 +64,7 @@ function openFileSearchPopup(lbuffer: string, rbuffer: string) {
         try {
           const items = getFileList(newPath)
           currentAbsPath = newPath
+          popup.headerText = currentAbsPath
           return items
         } catch {
           return undefined
@@ -78,6 +78,7 @@ function openFileSearchPopup(lbuffer: string, rbuffer: string) {
       try {
         const items = getFileList(parentPath)
         currentAbsPath = parentPath
+        popup.headerText = currentAbsPath
         return items
       } catch {
         return getFileList(currentAbsPath)
@@ -90,9 +91,7 @@ function openFileSearchPopup(lbuffer: string, rbuffer: string) {
   popup.handleSelection = (line, action) => {
     if (line) {
       const selectedFile = getFileNameFromLine(line)
-      if (action === 'navigate' && line.startsWith('d')) {
-        return
-      }
+      if (action === 'navigate' && line.startsWith('d')) return
       // Convert absolute path back to relative for output
       let relativePath = path.relative(process.cwd(), currentAbsPath)
       // But use absolute path if outside cwd
