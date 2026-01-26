@@ -83,22 +83,31 @@ export function getFileNameFromLine(line: string): string {
   return line.slice(49).trim()
 }
 
+function formatFileEntry(filePath: string, filename: string): string | undefined {
+  try {
+    const stats = fs.statSync(filePath)
+    const permissions = formatPermissions(stats.mode, stats.isDirectory())
+    const username = getUsername(stats.uid).substring(0, 8).padEnd(8)
+    const size = formatSize(stats.size)
+    const date = formatDate(stats.mtime)
+    const time = formatTime(stats.mtime)
+    return `${permissions}  ${username}  ${size}  ${date} ${time}  ${filename} `
+  } catch {
+    return undefined
+  }
+}
+
 export function getFileList(searchDir: string = process.cwd()): string[] {
   const files = fs.readdirSync(searchDir)
   const result: string[] = []
+  // Add ".." entry for parent directory navigation (except at root)
+  if (searchDir !== '/') {
+    const parentEntry = formatFileEntry(path.dirname(searchDir), '..')
+    if (parentEntry) result.push(parentEntry)
+  }
   for (const filename of files) {
-    try {
-      const filePath = path.join(searchDir, filename)
-      const stats = fs.statSync(filePath)
-      const permissions = formatPermissions(stats.mode, stats.isDirectory())
-      const username = getUsername(stats.uid).substring(0, 8).padEnd(8)
-      const size = formatSize(stats.size)
-      const date = formatDate(stats.mtime)
-      const time = formatTime(stats.mtime)
-      result.push(`${permissions}  ${username}  ${size}  ${date} ${time}  ${filename} `)
-    } catch {
-      // Skip files that can't be stat'd (broken symlinks, permission issues, etc.)
-    }
+    const entry = formatFileEntry(path.join(searchDir, filename), filename)
+    if (entry) result.push(entry)
   }
   return result
 }
