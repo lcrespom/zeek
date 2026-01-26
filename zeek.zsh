@@ -54,7 +54,9 @@ function file_search_popup() {
       # Output format: new_lbuffer\tnew_rbuffer (tab-separated)
       LBUFFER="${search_out%%$'\t'*}"
       RBUFFER="${search_out#*$'\t'}"
-      [[ "$RBUFFER" == "$search_out" ]] && RBUFFER=""
+      if [[ "$RBUFFER" == "$search_out" ]]; then
+        RBUFFER=""
+      fi
     fi
 }
 
