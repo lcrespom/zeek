@@ -57,13 +57,14 @@ const COLOR_FUCHSIA = '#f92672'
 const COLOR_CYAN = '#66d9ef'
 const COLOR_ORANGE = '#fd971f'
 const COLOR_PURPLE = '#ae81ff'
+const COLOR_YELLOW = '#e6db74'
 
 const colPermissions = fgColorFunc(COLOR_FUCHSIA)
 const colUsername = fgColorFunc(COLOR_GREEN)
 const colSize = fgColorFunc(COLOR_ORANGE)
 const colDate = fgColorFunc(COLOR_PURPLE)
 const colTime = fgColorFunc(COLOR_PURPLE)
-const colFile = fgColorFunc(COLOR_GREEN)
+const colFile = fgColorFunc(COLOR_YELLOW)
 const colDir = fgColorFunc(COLOR_CYAN)
 
 export function highlightFileListLine(line: string): string {
