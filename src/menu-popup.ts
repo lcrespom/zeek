@@ -159,7 +159,8 @@ export class MenuPopup {
     moveCursor({ row: this.menuRow, col: 1 })
     this.filteredItems = this.filterItems(this.items, line)
     if (this.filteredItems.length === 0) this.filteredItems = [NO_MATCHES]
-    this.menu.update({ items: this.filteredItems, selection: this.filteredItems.length - 1 })
+    const selection = this.selectionAtStart ? 0 : this.filteredItems.length - 1
+    this.menu.update({ items: this.filteredItems, selection })
   }
 
   private listenKeyboard(lbuffer: string, rbuffer: string) {
