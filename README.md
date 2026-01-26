@@ -26,9 +26,13 @@ Zeek provides three main features:
 - Automatically records directory changes via the `chpwd` hook
 - Stores history in `~/.dir_history`
 
-### 3. **File Search** (Shift+Right) - Not yet implemented
+### 3. **File Search** (Shift+Right)
 
-- Placeholder for future file navigation feature
+- Interactive file browser for quick file path insertion
+- Features:
+  - **Directory listing**: Shows files with permissions, owner, size, date, and name
+  - **Directory navigation**: Press Tab to enter a directory, Backspace to go up
+  - **Fuzzy filtering**: Type to filter by filename
 
 ## Usage
 
@@ -54,7 +58,7 @@ At the end of your `~/.zshrc` file.
 - **Page Up**: Command history popup
 - **Page Down**: Directory history popup
 - **Shift+Up**: Go to parent directory (`cd ..`)
-- **Shift+Right**: File search (not implemented yet)
+- **Shift+Right**: File search popup
 - **ESC**: Clear current line
 - **Home/End**: Navigate to start/end of line
 - **Option+Left/Right**: Word navigation
@@ -70,7 +74,7 @@ The architecture is a combination of **Zsh shell scripting** and **Node.js/TypeS
    - Receives selected text via file descriptor 3 and updates the command line
 
 2. **Node.js Side** ([src/index.ts](src/index.ts)):
-   - Handles four commands: `help`, `history`, `store-dir`, `dir-history`
+   - Handles five commands: `help`, `history`, `store-dir`, `dir-history`, `file-search`
    - Uses alternate screen buffer (so the popup doesn't mess up your terminal)
    - Implements a full-featured line editor with:
      - Cursor movement (left, right, home, end, word navigation)
