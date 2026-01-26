@@ -43,6 +43,9 @@ export class MenuPopup {
   // Optional header text shown above the menu
   headerText?: string
 
+  // If true, selection starts at the first item instead of last
+  selectionAtStart: boolean = false
+
   constructor(items: string[], lineHighlighter?: HighlightFunction) {
     this.items = items
     this.filteredItems = items
@@ -94,9 +97,10 @@ export class MenuPopup {
       this.lineEditor.showLine()
     }
     moveCursor({ row: this.menuRow, col: 1 })
+    const selection = this.selectionAtStart ? 0 : this.filteredItems.length - 1
     this.menu.update({
       items: this.filteredItems,
-      selection: this.filteredItems.length - 1,
+      selection,
       height,
       initialHeight: height,
       columnWidth: width,
@@ -127,13 +131,14 @@ export class MenuPopup {
   private createMenu() {
     const { width, height } = this.computeDimensions()
     moveCursor({ row: this.menuRow, col: 1 })
+    const selection = this.selectionAtStart ? 0 : this.items.length - 1
     return tableMenu({
       items: this.items,
       height,
       columns: 1,
       columnWidth: width,
       scrollBarCol: width + 1,
-      selection: this.items.length - 1,
+      selection,
       colors: this.getColors(width),
       done: (item: number) => this.menuDone(item)
     })

@@ -52,6 +52,8 @@ function openFileSearchPopup(lbuffer: string, rbuffer: string) {
   const popup = new MenuPopup(getFileList(currentAbsPath), highlightFileListLine)
   // Show current path above the menu
   popup.headerText = currentAbsPath
+  // Start selection at first item (not last like history)
+  popup.selectionAtStart = true
   // Filter only by filename, not the full line with permissions/size/date
   popup.getFilterText = getFileNameFromLine
 
