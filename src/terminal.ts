@@ -180,9 +180,3 @@ export function bgColorFunc(hex: string) {
   const prefix = bgRGB(r, g!, b!)
   return (s: string) => prefix + s + RESET_COLOR_SEQUENCE
 }
-
-export function underline(s: string) {
-  const UNDERLINE_START = '\x1b[4m'
-  const UNDERLINE_END = '\x1b[24m'
-  return UNDERLINE_START + s + UNDERLINE_END
-}

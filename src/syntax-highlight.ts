@@ -15,13 +15,6 @@ function getTokenColors(): Record<ZshTokenType, (s: string) => string> {
 }
 
 /**
- * Tokenize and highlight a command line, returning tokens with positions.
- */
-export function highlight(line: string): ZshToken[] {
-  return tokenize(line)
-}
-
-/**
  * Apply color to a single token.
  */
 function applyTokenColor(text: string, token: ZshToken): string {
@@ -57,6 +50,6 @@ function colorize(line: string, tokens: ZshToken[]): string {
  * Highlight a command line with syntax coloring.
  */
 export function highlightCommand(cmd: string): string {
-  const tokens = highlight(cmd)
+  const tokens = tokenize(cmd)
   return colorize(cmd, tokens)
 }
