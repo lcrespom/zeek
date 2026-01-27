@@ -1,19 +1,11 @@
 import fs from 'node:fs'
-import path from 'node:path'
 
 import { getCommandHistory } from './cmd-history.ts'
 import { initConfig } from './config.ts'
 import { addCwdToHistory, getDirHistory } from './dir-history.ts'
-import {
-  getFileList,
-  getFileNameFromLine,
-  getWordUnderCursor,
-  highlightFileListLine,
-  resolveDir,
-  splitPathAndFile
-} from './file-list.ts'
 import { MenuPopup } from './menu-popup.ts'
 import { highlightCommand } from './syntax-highlight.ts'
+import { openFileSearchPopup } from './file-search-popup.ts'
 
 function getCommand() {
   return process.argv[2] || 'help'
@@ -44,71 +36,6 @@ function openDirHistoryPopup(lbuffer: string, rbuffer: string) {
   popup.openMenuPopup(lbuffer, rbuffer)
 }
 
-function openFileSearchPopup(lbuffer: string, rbuffer: string) {
-  const { word, wordStart, suffix } = getWordUnderCursor(lbuffer, rbuffer)
-  const { dir, file } = splitPathAndFile(word)
-  // Track current directory as absolute path (simpler navigation logic)
-  let currentAbsPath = resolveDir(dir)
-  const popup = new MenuPopup(getFileList(currentAbsPath), highlightFileListLine)
-  // Show current path above the menu
-  popup.headerText = currentAbsPath
-  // Start selection at first item (not last like history)
-  popup.selectionAtStart = true
-  // Filter only by filename, not the full line with permissions/size/date
-  popup.getFilterText = getFileNameFromLine
-
-  // Handle Tab/Backspace navigation
-  popup.onNavigate = (line, action) => {
-    if (action === 'navigate' && line) {
-      const selectedFile = getFileNameFromLine(line)
-      if (line.startsWith('d')) {
-        const newPath = path.join(currentAbsPath, selectedFile)
-        try {
-          const items = getFileList(newPath)
-          currentAbsPath = newPath
-          popup.headerText = currentAbsPath
-          return items
-        } catch {
-          return undefined
-        }
-      }
-    } else if (action === 'navigate-up') {
-      if (currentAbsPath === '/') {
-        return getFileList(currentAbsPath)
-      }
-      const parentPath = path.dirname(currentAbsPath)
-      try {
-        const items = getFileList(parentPath)
-        currentAbsPath = parentPath
-        popup.headerText = currentAbsPath
-        return items
-      } catch {
-        return getFileList(currentAbsPath)
-      }
-    }
-    return undefined
-  }
-
-  // Handle final selection (Enter key)
-  popup.handleSelection = (line, action) => {
-    if (line) {
-      const selectedFile = getFileNameFromLine(line)
-      if (action === 'navigate' && line.startsWith('d')) return
-      // Convert absolute path back to relative for output
-      let relativePath = path.relative(process.cwd(), currentAbsPath)
-      // But use absolute path if outside cwd
-      if (relativePath.startsWith('..')) relativePath = currentAbsPath
-      let prefix = relativePath ? relativePath + '/' : ''
-      if (relativePath === '/') prefix = '/'
-      const newLbuffer = lbuffer.slice(0, wordStart) + prefix + selectedFile
-      line = newLbuffer + '\t' + suffix
-    }
-    emitLineAndExit(line)
-  }
-
-  popup.openMenuPopup(file, '')
-}
-
 function main() {
   const command = getCommand()
   const lbuffer = process.argv[3]
@@ -128,7 +55,7 @@ function main() {
       openDirHistoryPopup(lbuffer, rbuffer)
       break
     case 'file-search':
-      openFileSearchPopup(lbuffer, rbuffer)
+      openFileSearchPopup(emitLineAndExit, lbuffer, rbuffer)
       break
     default:
       console.log(`Unknown command: ${command}`)
