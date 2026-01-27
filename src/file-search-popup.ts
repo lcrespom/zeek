@@ -12,12 +12,24 @@ import {
 
 type ExitHandler = (line?: string) => void
 
+function singleMatch(fileList: string[], file: string) {
+  const fileNames = fileList.map(getFileNameFromLine)
+  const matches = fileNames.filter(fname => fname.toLowerCase().startsWith(file.toLowerCase()))
+  if (matches.length === 1) return matches[0]
+  return null
+}
+
 export function openFileSearchPopup(exitHandler: ExitHandler, lbuffer: string, rbuffer: string) {
   const { word, wordStart, suffix } = getWordUnderCursor(lbuffer, rbuffer)
   const { dir, file } = splitPathAndFile(word)
   // Track current directory as absolute path (simpler navigation logic)
   let currentAbsPath = resolveDir(dir)
-  const popup = new MenuPopup(getFileList(currentAbsPath), highlightFileListLine)
+  const fileList = getFileList(currentAbsPath)
+  // If there's a single match, immediately return it
+  const match = singleMatch(fileList, file)
+  if (match) return exitHandler(lbuffer.slice(0, wordStart) + match + '\t' + suffix)
+  // Otherwise, setup the popup menu
+  const popup = new MenuPopup(fileList, highlightFileListLine)
   // Show current path above the menu
   popup.headerText = currentAbsPath
   // Start selection at first item (not last like history)
