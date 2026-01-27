@@ -1,12 +1,12 @@
 import fs from 'node:fs'
 
 import { getCommandHistory } from './cmd-history.ts'
-import { openCmdSearchPopup } from './completion/cmd-search-popup.ts'
 import { initConfig } from './config.ts'
 import { addCwdToHistory, getDirHistory } from './dir-history.ts'
-import { openFileSearchPopup } from './completion/file-search-popup.ts'
 import { MenuPopup } from './menu-popup.ts'
 import { highlightCommand } from './syntax-highlight.ts'
+import { openCmdSearchPopup } from './completion/cmd-search-popup.ts'
+import { openFileSearchPopup } from './completion/file-search-popup.ts'
 
 function getCommand() {
   return process.argv[2] || 'help'
@@ -75,7 +75,7 @@ function main() {
     case 'dir-history':
       openDirHistoryPopup(lbuffer, rbuffer)
       break
-    case 'file-search':
+    case 'completion':
       if (isAtCommandPosition(lbuffer)) {
         openCmdSearchPopup(emitLineAndExit, lbuffer, rbuffer)
       } else {

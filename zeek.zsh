@@ -47,9 +47,9 @@ function history_popup() {
     fi
 }
 
-# Open Zeek file search popup
-function file_search_popup() {
-    local search_out=$(zeek file-search "$LBUFFER" "$RBUFFER")
+# Open Zeek completion popup
+function completion_popup() {
+    local search_out=$(zeek completion "$LBUFFER" "$RBUFFER")
     if [[ -n "$search_out" ]]; then
       # Output format: new_lbuffer\tnew_rbuffer (tab-separated)
       LBUFFER="${search_out%%$'\t'*}"
@@ -76,7 +76,7 @@ function clear_line() {
 # Register the functions as widgets
 zle -N dir_history_popup
 zle -N history_popup
-zle -N file_search_popup
+zle -N completion_popup
 zle -N cd_to_parent_dir
 zle -N clear_line
 
@@ -95,7 +95,7 @@ KB_OPTION_RIGHT="^[^[[C"
 # Bind the activation keys to the widgets
 bindkey $KB_PAGE_DOWN dir_history_popup
 bindkey $KB_PAGE_UP history_popup
-bindkey $KB_SHIFT_RIGHT file_search_popup
+bindkey $KB_SHIFT_RIGHT completion_popup
 bindkey $KB_SHIFT_UP cd_to_parent_dir
 bindkey $KB_ESC clear_line
 
