@@ -28,8 +28,25 @@ const NO_MATCHES = '# 🤷 No matches'
 
 export type HighlightFunction = (line: string) => string
 export type FilterTextFunction = (line: string) => string
-
 export type SelectionAction = 'select' | 'navigate' | 'navigate-up'
+export type SelectionHandler = (line?: string, action?: SelectionAction) => void
+export type NavigateResult = string[] | { items: string[]; headerText?: string } | undefined
+export type NavigateHandler = (line: string | undefined, action: SelectionAction) => NavigateResult
+
+export type MenuPopupOptions = {
+  /** Function to highlight/colorize each line */
+  lineHighlighter?: HighlightFunction
+  /** Header text shown above the menu */
+  headerText?: string
+  /** If true, selection starts at first item instead of last (default: false) */
+  selectionAtStart?: boolean
+  /** Extract the text to filter on from each item */
+  getFilterText?: FilterTextFunction
+  /** Called when Tab or Backspace navigation is triggered. Return new items to update menu, or undefined to close. */
+  onNavigate?: NavigateHandler
+  /** Called when an item is selected */
+  onSelection: SelectionHandler
+}
 
 export class MenuPopup {
   private items: string[] = []
@@ -39,17 +56,22 @@ export class MenuPopup {
   private menuRow: number = 3
   private lineEditorRow: number = 1
   private lineEditor: LineEditor | null = null
+  private getFilterText?: FilterTextFunction
+  private onNavigate?: NavigateHandler
+  private onSelection: SelectionHandler
 
-  // Optional header text shown above the menu
   headerText?: string
-
-  // If true, selection starts at the first item instead of last
   selectionAtStart: boolean = false
 
-  constructor(items: string[], lineHighlighter?: HighlightFunction) {
+  constructor(items: string[], options: MenuPopupOptions) {
     this.items = items
     this.filteredItems = items
-    if (lineHighlighter) this.lineHighlighter = lineHighlighter
+    this.onSelection = options.onSelection
+    if (options.lineHighlighter) this.lineHighlighter = options.lineHighlighter
+    if (options.headerText) this.headerText = options.headerText
+    if (options.selectionAtStart) this.selectionAtStart = options.selectionAtStart
+    if (options.getFilterText) this.getFilterText = options.getFilterText
+    if (options.onNavigate) this.onNavigate = options.onNavigate
   }
 
   openMenuPopup(lbuffer: string = '', rbuffer: string = '') {
@@ -73,15 +95,13 @@ export class MenuPopup {
     process.stdout.write(fgColorFunc(MENU_FG_COLOR)(this.headerText))
   }
 
-  handleSelection(line?: string, action?: SelectionAction) {}
-
-  // Called when Tab or Backspace navigation is triggered
-  // Return new items to update the menu, or undefined to close the popup
-  onNavigate?: (line: string | undefined, action: SelectionAction) => string[] | undefined
-
-  // Optional function to extract the text to filter on from each item
-  // By default, filters on the entire item
-  getFilterText?: FilterTextFunction
+  private applyNavigateResult(result: string[] | { items: string[]; headerText?: string }) {
+    if (Array.isArray(result)) {
+      this.setItems(result)
+    } else {
+      this.setItems(result.items, result.headerText)
+    }
+  }
 
   // Update menu items and clear filter
   setItems(items: string[], headerText?: string) {
@@ -180,9 +200,9 @@ export class MenuPopup {
       if (key && key.name === 'tab') {
         const line = this.filteredItems[this.menu.selection]
         if (this.onNavigate) {
-          const newItems = this.onNavigate(line, 'navigate')
-          if (newItems) {
-            this.setItems(newItems)
+          const result = this.onNavigate(line, 'navigate')
+          if (result) {
+            this.applyNavigateResult(result)
             moveCursor(this.lineEditor.getCursorPosition())
             showCursor()
             return
@@ -194,9 +214,9 @@ export class MenuPopup {
       // Backspace on empty filter: navigate to parent directory
       if (this.lineEditor.isBackspace(ch) && this.lineEditor.getLine() === '') {
         if (this.onNavigate) {
-          const newItems = this.onNavigate(undefined, 'navigate-up')
-          if (newItems) {
-            this.setItems(newItems)
+          const result = this.onNavigate(undefined, 'navigate-up')
+          if (result) {
+            this.applyNavigateResult(result)
             moveCursor(this.lineEditor.getCursorPosition())
             showCursor()
             return
@@ -237,6 +257,6 @@ export class MenuPopup {
     else if (line) line = line.replaceAll(GRAPHIC_NEWLINE, '\n')
     normalScreen()
     showCursor()
-    this.handleSelection(line, action)
+    this.onSelection(line, action)
   }
 }

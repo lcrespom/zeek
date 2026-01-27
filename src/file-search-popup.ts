@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import type { NavigateHandler, SelectionHandler } from './menu-popup.ts'
 import { MenuPopup } from './menu-popup.ts'
 import {
   getFileList,
@@ -47,17 +48,8 @@ export function openFileSearchPopup(exitHandler: ExitHandler, lbuffer: string, r
   // If there's a single match, immediately return it
   const match = singleMatch(fileList, file)
   if (match) return exitHandler(exitHandlerLine(prefix, match, suffix))
-  // Otherwise, setup the popup menu
-  const popup = new MenuPopup(fileList, highlightFileListLine)
-  // Show current path above the menu
-  popup.headerText = currentAbsPath
-  // Start selection at first item (not last like history)
-  popup.selectionAtStart = true
-  // Filter only by filename, not the full line with permissions/size/date
-  popup.getFilterText = getFileNameFromLine
 
-  // Handle Tab/Backspace navigation
-  popup.onNavigate = (line, action) => {
+  const onNavigate: NavigateHandler = (line, action) => {
     if (action === 'navigate' && line) {
       const selectedFile = getFileNameFromLine(line)
       if (line.startsWith('d')) {
@@ -65,31 +57,28 @@ export function openFileSearchPopup(exitHandler: ExitHandler, lbuffer: string, r
         try {
           const items = getFileList(newPath)
           currentAbsPath = newPath
-          popup.headerText = currentAbsPath
-          return items
+          return { items, headerText: currentAbsPath }
         } catch {
           return undefined
         }
       }
     } else if (action === 'navigate-up') {
       if (currentAbsPath === '/') {
-        return getFileList(currentAbsPath)
+        return { items: getFileList(currentAbsPath), headerText: currentAbsPath }
       }
       const parentPath = path.dirname(currentAbsPath)
       try {
         const items = getFileList(parentPath)
         currentAbsPath = parentPath
-        popup.headerText = currentAbsPath
-        return items
+        return { items, headerText: currentAbsPath }
       } catch {
-        return getFileList(currentAbsPath)
+        return { items: getFileList(currentAbsPath), headerText: currentAbsPath }
       }
     }
     return undefined
   }
 
-  // Handle final selection (Enter key)
-  popup.handleSelection = (line, action) => {
+  const onSelection: SelectionHandler = (line, action) => {
     if (line) {
       const selectedFile = getFileNameFromLine(line)
       if (action === 'navigate' && line.startsWith('d')) return
@@ -103,6 +92,15 @@ export function openFileSearchPopup(exitHandler: ExitHandler, lbuffer: string, r
     }
     exitHandler(line)
   }
+
+  const popup = new MenuPopup(fileList, {
+    lineHighlighter: highlightFileListLine,
+    headerText: currentAbsPath,
+    selectionAtStart: true,
+    getFilterText: getFileNameFromLine,
+    onNavigate,
+    onSelection
+  })
 
   popup.openMenuPopup(file, '')
 }

@@ -25,14 +25,17 @@ function emitLineAndExit(line?: string) {
 }
 
 function openHistoryPopup(lbuffer: string, rbuffer: string) {
-  const popup = new MenuPopup(getCommandHistory(), highlightCommand)
-  popup.handleSelection = emitLineAndExit
+  const popup = new MenuPopup(getCommandHistory(), {
+    lineHighlighter: highlightCommand,
+    onSelection: emitLineAndExit
+  })
   popup.openMenuPopup(lbuffer, rbuffer)
 }
 
 function openDirHistoryPopup(lbuffer: string, rbuffer: string) {
-  const popup = new MenuPopup(getDirHistory())
-  popup.handleSelection = emitLineAndExit
+  const popup = new MenuPopup(getDirHistory(), {
+    onSelection: emitLineAndExit
+  })
   popup.openMenuPopup(lbuffer, rbuffer)
 }
 
