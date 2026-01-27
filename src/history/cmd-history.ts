@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process'
 import { join } from 'node:path'
 
-import { Config } from './config.ts'
+import { Config } from '../config.ts'
 
 export const GRAPHIC_NEWLINE = '↵'
 const HISTORY_FILE = '.zsh_history'

@@ -1,6 +1,6 @@
-import { tokenize, type ZshToken, type ZshTokenType } from './zsh-tokenizer/zsh-tokenizer.ts'
-import { parseStyleString } from './terminal.ts'
-import { SyntaxHighlight } from './config.ts'
+import { tokenize, type ZshToken, type ZshTokenType } from '../zsh-tokenizer/zsh-tokenizer.ts'
+import { parseStyleString } from '../terminal.ts'
+import { SyntaxHighlight } from '../config.ts'
 
 // Build color functions lazily from SyntaxHighlight config (after initConfig has run)
 let tokenColors: Record<ZshTokenType, (s: string) => string> | null = null

@@ -1,10 +1,10 @@
 import fs from 'node:fs'
 
-import { getCommandHistory } from './cmd-history.ts'
 import { initConfig } from './config.ts'
-import { addCwdToHistory, getDirHistory } from './dir-history.ts'
 import { MenuPopup } from './menu-popup.ts'
-import { highlightCommand } from './syntax-highlight.ts'
+import { getCommandHistory } from './history/cmd-history.ts'
+import { addCwdToHistory, getDirHistory } from './history/dir-history.ts'
+import { highlightCommand } from './history/syntax-highlight.ts'
 import { openCmdSearchPopup } from './completion/cmd-search-popup.ts'
 import { openFileSearchPopup } from './completion/file-search-popup.ts'
 

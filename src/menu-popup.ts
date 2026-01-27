@@ -16,7 +16,7 @@ import {
   showCursor
 } from './terminal.ts'
 import { Config } from './config.ts'
-import { GRAPHIC_NEWLINE } from './cmd-history.ts'
+import { GRAPHIC_NEWLINE } from './history/cmd-history.ts'
 
 // TODO read colors from configuration file
 const MENU_BG_COLOR = '#1d1e1a'

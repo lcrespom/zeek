@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { Config } from './config.ts'
+import { Config } from '../config.ts'
 
 const dirHistoryPath = join(getHomeDirectory(), '.dir_history')
 
