@@ -95,7 +95,7 @@ KB_OPTION_RIGHT="^[^[[C"
 # Bind the activation keys to the widgets
 bindkey $KB_PAGE_DOWN dir_history_popup
 bindkey $KB_PAGE_UP history_popup
-bindkey $KB_TAB file_search_popup
+bindkey $KB_SHIFT_RIGHT file_search_popup
 bindkey $KB_SHIFT_UP cd_to_parent_dir
 bindkey $KB_ESC clear_line
 
