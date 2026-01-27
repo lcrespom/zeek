@@ -19,15 +19,20 @@ function singleMatch(fileList: string[], file: string) {
   return null
 }
 
+function exitHandlerLine(prefix: string, path: string, suffix: string) {
+  const sep = suffix.startsWith(' ') ? '' : ' '
+  return prefix + path + sep + '\t' + suffix
+}
+
 export function openFileSearchPopup(exitHandler: ExitHandler, lbuffer: string, rbuffer: string) {
-  const { word, wordStart, suffix } = getWordUnderCursor(lbuffer, rbuffer)
+  const { word, prefix, suffix } = getWordUnderCursor(lbuffer, rbuffer)
   const { dir, file } = splitPathAndFile(word)
   // Track current directory as absolute path (simpler navigation logic)
   let currentAbsPath = resolveDir(dir)
   const fileList = getFileList(currentAbsPath)
   // If there's a single match, immediately return it
   const match = singleMatch(fileList, file)
-  if (match) return exitHandler(lbuffer.slice(0, wordStart) + match + '\t' + suffix)
+  if (match) return exitHandler(exitHandlerLine(prefix, match, suffix))
   // Otherwise, setup the popup menu
   const popup = new MenuPopup(fileList, highlightFileListLine)
   // Show current path above the menu
@@ -78,10 +83,9 @@ export function openFileSearchPopup(exitHandler: ExitHandler, lbuffer: string, r
       let relativePath = path.relative(process.cwd(), currentAbsPath)
       // But use absolute path if outside cwd
       if (relativePath.startsWith('..')) relativePath = currentAbsPath
-      let prefix = relativePath ? relativePath + '/' : ''
-      if (relativePath === '/') prefix = '/'
-      const newLbuffer = lbuffer.slice(0, wordStart) + prefix + selectedFile
-      line = newLbuffer + '\t' + suffix
+      let fpath = relativePath ? relativePath + '/' : ''
+      if (relativePath === '/') fpath = '/'
+      line = exitHandlerLine(prefix, fpath + selectedFile, suffix)
     }
     exitHandler(line)
   }

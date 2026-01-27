@@ -122,7 +122,7 @@ export function getFileList(searchDir: string = process.cwd()): string[] {
 export function getWordUnderCursor(
   lbuffer: string,
   rbuffer: string
-): { word: string; wordStart: number; suffix: string } {
+): { word: string; prefix: string; suffix: string } {
   // Find the start of the word (last space in lbuffer, or start of lbuffer)
   let wordStart = lbuffer.length
   for (let i = lbuffer.length - 1; i >= 0; i--) {
@@ -142,8 +142,9 @@ export function getWordUnderCursor(
     }
   }
   const rightPart = rbuffer.slice(0, wordEnd)
+  const prefix = lbuffer.slice(0, wordStart)
   const suffix = rbuffer.slice(wordEnd)
-  return { word: leftPart + rightPart, wordStart, suffix }
+  return { word: leftPart + rightPart, prefix, suffix }
 }
 
 /**
