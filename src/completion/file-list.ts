@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import userid from 'userid'
 
-import { fgColorFunc } from './terminal.ts'
+import { fgColorFunc } from '../terminal.ts'
 
 // Cache UID -> username lookups for performance
 const uidCache = new Map<number, string>()

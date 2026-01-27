@@ -1,5 +1,5 @@
-import type { SelectionHandler } from './menu-popup.ts'
-import { MenuPopup } from './menu-popup.ts'
+import type { SelectionHandler } from '../menu-popup.ts'
+import { MenuPopup } from '../menu-popup.ts'
 import { getCommandList, highlightCommandLine } from './cmd-list.ts'
 
 type ExitHandler = (line?: string) => void

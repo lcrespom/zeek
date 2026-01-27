@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { fgColorFunc } from './terminal.ts'
+import { fgColorFunc } from '../terminal.ts'
 
 const COLOR_GREEN = '#a6e22e'
 const colCommand = fgColorFunc(COLOR_GREEN)

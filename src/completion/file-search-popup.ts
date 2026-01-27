@@ -1,8 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import type { NavigateHandler, SelectionHandler } from './menu-popup.ts'
-import { MenuPopup } from './menu-popup.ts'
+import type { NavigateHandler, SelectionHandler } from '../menu-popup.ts'
+import { MenuPopup } from '../menu-popup.ts'
 import {
   getFileList,
   getFileNameFromLine,
