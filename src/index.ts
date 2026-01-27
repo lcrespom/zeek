@@ -1,11 +1,12 @@
 import fs from 'node:fs'
 
 import { getCommandHistory } from './cmd-history.ts'
+import { openCmdSearchPopup } from './cmd-search-popup.ts'
 import { initConfig } from './config.ts'
 import { addCwdToHistory, getDirHistory } from './dir-history.ts'
+import { openFileSearchPopup } from './file-search-popup.ts'
 import { MenuPopup } from './menu-popup.ts'
 import { highlightCommand } from './syntax-highlight.ts'
-import { openFileSearchPopup } from './file-search-popup.ts'
 
 function getCommand() {
   return process.argv[2] || 'help'
@@ -22,6 +23,23 @@ function emitLineAndExit(line?: string) {
     fs.closeSync(fd3)
   }
   process.exit(0)
+}
+
+// Check if cursor is at a position where a command is expected
+// We're typing a command if there's no space after the last separator (or start of line)
+// Examples: "" -> cmd, "c" -> cmd, "cat " -> file, "cat file | g" -> cmd
+function isAtCommandPosition(lbuffer: string): boolean {
+  // Find the text after the last command separator
+  const separatorPattern = /[;&|()]/g
+  let lastSepEnd = 0
+  let match
+  while ((match = separatorPattern.exec(lbuffer)) !== null) {
+    lastSepEnd = match.index + match[0].length
+  }
+  // Trim leading whitespace - it's not a command/argument separator
+  const textAfterSep = lbuffer.slice(lastSepEnd).trimStart()
+  // If no space in the text after separator, we're still typing the command
+  return !textAfterSep.includes(' ')
 }
 
 function openHistoryPopup(lbuffer: string, rbuffer: string) {
@@ -58,7 +76,11 @@ function main() {
       openDirHistoryPopup(lbuffer, rbuffer)
       break
     case 'file-search':
-      openFileSearchPopup(emitLineAndExit, lbuffer, rbuffer)
+      if (isAtCommandPosition(lbuffer)) {
+        openCmdSearchPopup(emitLineAndExit, lbuffer, rbuffer)
+      } else {
+        openFileSearchPopup(emitLineAndExit, lbuffer, rbuffer)
+      }
       break
     default:
       console.log(`Unknown command: ${command}`)
