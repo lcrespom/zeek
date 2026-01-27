@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import path from 'node:path'
 
 import { MenuPopup } from './menu-popup.ts'
@@ -19,8 +20,21 @@ function singleMatch(fileList: string[], file: string) {
   return null
 }
 
+function isDirectoryPath(path: string) {
+  try {
+    const stats = fs.statSync(path)
+    return stats.isDirectory()
+  } catch {
+    return false
+  }
+}
+
 function exitHandlerLine(prefix: string, path: string, suffix: string) {
-  const sep = suffix.startsWith(' ') ? '' : ' '
+  let sep = suffix.startsWith(' ') ? '' : ' '
+  if (isDirectoryPath(path)) {
+    path += '/'
+    sep = ''
+  }
   return prefix + path + sep + '\t' + suffix
 }
 
