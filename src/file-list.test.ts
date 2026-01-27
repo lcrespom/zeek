@@ -7,124 +7,124 @@ describe('getWordUnderCursor', () => {
   describe('Empty input', () => {
     test('empty lbuffer and rbuffer', () => {
       const result = getWordUnderCursor('', '')
-      assert.deepEqual(result, { word: '', wordStart: 0, suffix: '' })
+      assert.deepEqual(result, { word: '', prefix: '', suffix: '' })
     })
 
     test('lbuffer with trailing space, empty rbuffer', () => {
       const result = getWordUnderCursor('ls ', '')
-      assert.deepEqual(result, { word: '', wordStart: 3, suffix: '' })
+      assert.deepEqual(result, { word: '', prefix: 'ls ', suffix: '' })
     })
   })
 
   describe('Plain alphanumeric (no path)', () => {
     test('single word in lbuffer', () => {
       const result = getWordUnderCursor('foo', '')
-      assert.deepEqual(result, { word: 'foo', wordStart: 0, suffix: '' })
+      assert.deepEqual(result, { word: 'foo', prefix: '', suffix: '' })
     })
 
     test('command followed by partial word', () => {
       const result = getWordUnderCursor('ls foo', '')
-      assert.deepEqual(result, { word: 'foo', wordStart: 3, suffix: '' })
+      assert.deepEqual(result, { word: 'foo', prefix: 'ls ', suffix: '' })
     })
 
     test('word split across lbuffer and rbuffer', () => {
       const result = getWordUnderCursor('ls fo', 'o')
-      assert.deepEqual(result, { word: 'foo', wordStart: 3, suffix: '' })
+      assert.deepEqual(result, { word: 'foo', prefix: 'ls ', suffix: '' })
     })
 
     test('cursor in middle of word with more text after', () => {
       const result = getWordUnderCursor('ls fo', 'o bar')
-      assert.deepEqual(result, { word: 'foo', wordStart: 3, suffix: ' bar' })
+      assert.deepEqual(result, { word: 'foo', prefix: 'ls ', suffix: ' bar' })
     })
   })
 
   describe('Relative paths', () => {
     test('relative path with partial filename', () => {
       const result = getWordUnderCursor('ls src/ind', '')
-      assert.deepEqual(result, { word: 'src/ind', wordStart: 3, suffix: '' })
+      assert.deepEqual(result, { word: 'src/ind', prefix: 'ls ', suffix: '' })
     })
 
     test('relative path ending with slash', () => {
       const result = getWordUnderCursor('ls src/', '')
-      assert.deepEqual(result, { word: 'src/', wordStart: 3, suffix: '' })
+      assert.deepEqual(result, { word: 'src/', prefix: 'ls ', suffix: '' })
     })
 
     test('dot-relative path', () => {
       const result = getWordUnderCursor('cat ./file', '')
-      assert.deepEqual(result, { word: './file', wordStart: 4, suffix: '' })
+      assert.deepEqual(result, { word: './file', prefix: 'cat ', suffix: '' })
     })
 
     test('parent directory path', () => {
       const result = getWordUnderCursor('cd ../par', '')
-      assert.deepEqual(result, { word: '../par', wordStart: 3, suffix: '' })
+      assert.deepEqual(result, { word: '../par', prefix: 'cd ', suffix: '' })
     })
 
     test('nested relative path', () => {
       const result = getWordUnderCursor('vim src/zsh-tokenizer/tok', '')
-      assert.deepEqual(result, { word: 'src/zsh-tokenizer/tok', wordStart: 4, suffix: '' })
+      assert.deepEqual(result, { word: 'src/zsh-tokenizer/tok', prefix: 'vim ', suffix: '' })
     })
   })
 
   describe('Absolute paths', () => {
     test('absolute path with partial filename', () => {
       const result = getWordUnderCursor('cat /usr/local/b', '')
-      assert.deepEqual(result, { word: '/usr/local/b', wordStart: 4, suffix: '' })
+      assert.deepEqual(result, { word: '/usr/local/b', prefix: 'cat ', suffix: '' })
     })
 
     test('absolute path ending with slash', () => {
       const result = getWordUnderCursor('ls /usr/local/', '')
-      assert.deepEqual(result, { word: '/usr/local/', wordStart: 3, suffix: '' })
+      assert.deepEqual(result, { word: '/usr/local/', prefix: 'ls ', suffix: '' })
     })
 
     test('root directory', () => {
       const result = getWordUnderCursor('ls /', '')
-      assert.deepEqual(result, { word: '/', wordStart: 3, suffix: '' })
+      assert.deepEqual(result, { word: '/', prefix: 'ls ', suffix: '' })
     })
   })
 
   describe('Home directory paths', () => {
     test('home path with partial filename', () => {
       const result = getWordUnderCursor('cat ~/Doc', '')
-      assert.deepEqual(result, { word: '~/Doc', wordStart: 4, suffix: '' })
+      assert.deepEqual(result, { word: '~/Doc', prefix: 'cat ', suffix: '' })
     })
 
     test('home path ending with slash', () => {
       const result = getWordUnderCursor('ls ~/', '')
-      assert.deepEqual(result, { word: '~/', wordStart: 3, suffix: '' })
+      assert.deepEqual(result, { word: '~/', prefix: 'ls ', suffix: '' })
     })
 
     test('nested home path', () => {
       const result = getWordUnderCursor('vim ~/.config/zeek/con', '')
-      assert.deepEqual(result, { word: '~/.config/zeek/con', wordStart: 4, suffix: '' })
+      assert.deepEqual(result, { word: '~/.config/zeek/con', prefix: 'vim ', suffix: '' })
     })
   })
 
   describe('Multiple arguments', () => {
     test('multiple args, cursor at last', () => {
       const result = getWordUnderCursor('cp file1.txt dest/', '')
-      assert.deepEqual(result, { word: 'dest/', wordStart: 13, suffix: '' })
+      assert.deepEqual(result, { word: 'dest/', prefix: 'cp file1.txt ', suffix: '' })
     })
 
     test('flags before path', () => {
       const result = getWordUnderCursor('ls -la src/ind', '')
-      assert.deepEqual(result, { word: 'src/ind', wordStart: 7, suffix: '' })
+      assert.deepEqual(result, { word: 'src/ind', prefix: 'ls -la ', suffix: '' })
     })
   })
 
   describe('Suffix preservation', () => {
     test('pipe after word', () => {
       const result = getWordUnderCursor('cat pa', ' | grep "type"')
-      assert.deepEqual(result, { word: 'pa', wordStart: 4, suffix: ' | grep "type"' })
+      assert.deepEqual(result, { word: 'pa', prefix: 'cat ', suffix: ' | grep "type"' })
     })
 
     test('multiple words after', () => {
       const result = getWordUnderCursor('ls src/ind', 'ex.ts file2.ts')
-      assert.deepEqual(result, { word: 'src/index.ts', wordStart: 3, suffix: ' file2.ts' })
+      assert.deepEqual(result, { word: 'src/index.ts', prefix: 'ls ', suffix: ' file2.ts' })
     })
 
     test('redirection after', () => {
       const result = getWordUnderCursor('cat fi', 'le > output.txt')
-      assert.deepEqual(result, { word: 'file', wordStart: 4, suffix: ' > output.txt' })
+      assert.deepEqual(result, { word: 'file', prefix: 'cat ', suffix: ' > output.txt' })
     })
   })
 })
