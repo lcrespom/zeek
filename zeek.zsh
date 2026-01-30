@@ -47,16 +47,16 @@ function history_popup() {
     fi
 }
 
-# Open Zeek completion popup
+# Open Zeek file completion popup
 function completion_popup() {
     local search_out=$(zeek completion "$LBUFFER" "$RBUFFER")
     if [[ -n "$search_out" ]]; then
-      # Output format: new_lbuffer\tnew_rbuffer (tab-separated)
-      LBUFFER="${search_out%%$'\t'*}"
-      RBUFFER="${search_out#*$'\t'}"
-      if [[ "$RBUFFER" == "$search_out" ]]; then
-        RBUFFER=""
-      fi
+        # Output format: new_lbuffer\tnew_rbuffer (tab-separated)
+        LBUFFER="${search_out%%$'\t'*}"
+        RBUFFER="${search_out#*$'\t'}"
+        if [[ "$RBUFFER" == "$search_out" ]]; then
+            RBUFFER=""
+        fi
     fi
 }
 
