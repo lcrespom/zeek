@@ -77,6 +77,7 @@ export class MenuPopup {
   openMenuPopup(lbuffer: string = '', rbuffer: string = '') {
     alternateScreen()
     clearScreen()
+    if (!this.items || this.items.length === 0) this.items = [NO_MATCHES]
     try {
       this.menu = this.createMenu()
       this.showHeader()
